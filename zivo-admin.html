@@ -1,0 +1,1788 @@
+<title>ZIVO Admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
+
+<style>
+/* === ZIVO Admin — dark sidebar, rose/coral accent === */
+/* Layout: fixed sidebar + scrollable main content area */
+
+:root {
+  /* Color tokens — light base (sidebar always dark) */
+  --bg: #F7F8FA;
+  --surface: #FFFFFF;
+  --border: #E4E7ED;
+  --text: #1A1D23;
+  --text-muted: #6B7280;
+  --text-subtle: #9CA3AF;
+
+  /* ZIVO brand */
+  --rose: #E8445A;
+  --rose-soft: #FDE8EB;
+  --rose-mid: #F472848A;
+  --coral: #F06B4A;
+  --coral-soft: #FEF0EB;
+
+  /* Sidebar always dark regardless of theme */
+  --sidebar-bg: #0F1117;
+  --sidebar-surface: #1A1D27;
+  --sidebar-text: #C8CBD4;
+  --sidebar-muted: #565B6B;
+  --sidebar-active-bg: rgba(232,68,90,0.15);
+  --sidebar-active-text: #F47288;
+
+  /* Semantic */
+  --green: #22C55E;
+  --green-soft: #DCFCE7;
+  --amber: #F59E0B;
+  --amber-soft: #FEF3C7;
+  --red: #EF4444;
+  --red-soft: #FEE2E2;
+  --blue: #3B82F6;
+  --blue-soft: #DBEAFE;
+
+  --radius: 10px;
+  --radius-sm: 6px;
+  --font: 'Inter', system-ui, sans-serif;
+  --mono: 'JetBrains Mono', monospace;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0A0C10;
+    --surface: #13161E;
+    --border: #1F2330;
+    --text: #E8EAF0;
+    --text-muted: #8B92A5;
+    --text-subtle: #4B5268;
+    --rose-soft: rgba(232,68,90,0.15);
+    --coral-soft: rgba(240,107,74,0.15);
+    --green-soft: rgba(34,197,94,0.12);
+    --amber-soft: rgba(245,158,11,0.12);
+    --red-soft: rgba(239,68,68,0.12);
+    --blue-soft: rgba(59,130,246,0.12);
+    color-scheme: dark;
+  }
+}
+
+:root[data-theme="dark"] {
+  --bg: #0A0C10;
+  --surface: #13161E;
+  --border: #1F2330;
+  --text: #E8EAF0;
+  --text-muted: #8B92A5;
+  --text-subtle: #4B5268;
+  --rose-soft: rgba(232,68,90,0.15);
+  --coral-soft: rgba(240,107,74,0.15);
+  --green-soft: rgba(34,197,94,0.12);
+  --amber-soft: rgba(245,158,11,0.12);
+  --red-soft: rgba(239,68,68,0.12);
+  --blue-soft: rgba(59,130,246,0.12);
+  color-scheme: dark;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  height: 100%;
+  font-family: var(--font);
+  font-size: 14px;
+  color: var(--text);
+  background: var(--bg);
+  overflow: hidden;
+}
+
+/* === LAYOUT === */
+.app {
+  display: flex;
+  height: 100%;
+}
+
+/* === SIDEBAR === */
+.sidebar {
+  width: 220px;
+  min-width: 220px;
+  background: var(--sidebar-bg);
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid #1A1D27;
+  overflow-y: auto;
+  scrollbar-width: none;
+}
+.sidebar::-webkit-scrollbar { display: none; }
+
+.sidebar-logo {
+  padding: 20px 18px 16px;
+  border-bottom: 1px solid var(--sidebar-surface);
+}
+.logo-mark {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.logo-icon {
+  width: 32px;
+  height: 32px;
+  background: linear-gradient(135deg, var(--rose), var(--coral));
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 15px;
+  color: #fff;
+  letter-spacing: -0.5px;
+  flex-shrink: 0;
+}
+.logo-text {
+  font-size: 16px;
+  font-weight: 700;
+  color: #FFFFFF;
+  letter-spacing: 1px;
+}
+.logo-badge {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--sidebar-muted);
+  letter-spacing: 0.5px;
+  margin-top: 1px;
+}
+
+.sidebar-section {
+  padding: 16px 10px 8px;
+}
+.sidebar-label {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--sidebar-muted);
+  padding: 0 8px;
+  margin-bottom: 4px;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  color: var(--sidebar-text);
+  font-size: 13px;
+  font-weight: 500;
+  transition: background 0.15s, color 0.15s;
+  user-select: none;
+  margin-bottom: 1px;
+  position: relative;
+}
+.nav-item:hover {
+  background: rgba(255,255,255,0.05);
+  color: #fff;
+}
+.nav-item.active {
+  background: var(--sidebar-active-bg);
+  color: var(--sidebar-active-text);
+}
+.nav-item.active .nav-icon { color: var(--rose); }
+
+.nav-icon {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  opacity: 0.85;
+}
+.nav-badge {
+  margin-left: auto;
+  background: var(--rose);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 600;
+  padding: 1px 6px;
+  border-radius: 10px;
+  line-height: 16px;
+}
+
+.sidebar-footer {
+  margin-top: auto;
+  padding: 12px 10px;
+  border-top: 1px solid var(--sidebar-surface);
+}
+.admin-pill {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: var(--radius-sm);
+  background: var(--sidebar-surface);
+}
+.admin-avatar {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--rose), var(--coral));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 700;
+  color: #fff;
+  flex-shrink: 0;
+}
+.admin-info { flex: 1; min-width: 0; }
+.admin-name { font-size: 12px; font-weight: 600; color: #fff; }
+.admin-role { font-size: 10px; color: var(--sidebar-muted); }
+
+/* === MAIN === */
+.main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-width: 0;
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+  padding: 0 24px;
+  height: 56px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  gap: 16px;
+  flex-shrink: 0;
+}
+.page-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text);
+}
+.page-subtitle {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+.topbar-right {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.topbar-date {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+.live-dot {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--green);
+  background: var(--green-soft);
+  padding: 4px 10px;
+  border-radius: 20px;
+}
+.pulse {
+  width: 7px;
+  height: 7px;
+  background: var(--green);
+  border-radius: 50%;
+  animation: pulse 2s infinite;
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(0.8); }
+}
+
+.content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 24px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+
+/* === PANELS (tab pages) === */
+.panel { display: none; }
+.panel.active { display: block; }
+
+/* === STATS ROW === */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.stat-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 18px 20px;
+  position: relative;
+  overflow: hidden;
+}
+.stat-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+}
+.stat-card.rose::before { background: linear-gradient(90deg, var(--rose), var(--coral)); }
+.stat-card.green::before { background: var(--green); }
+.stat-card.amber::before { background: var(--amber); }
+.stat-card.blue::before { background: var(--blue); }
+
+.stat-label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+}
+.stat-value {
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  margin-bottom: 6px;
+}
+.stat-change {
+  font-size: 11px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.stat-change.up { color: var(--green); }
+.stat-change.down { color: var(--red); }
+.stat-icon-bg {
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  opacity: 0.06;
+  font-size: 48px;
+}
+
+/* === GRID ROWS === */
+.grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+.grid-3 {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+/* === CARD === */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+.card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+}
+.card-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+}
+.card-action {
+  font-size: 12px;
+  color: var(--rose);
+  font-weight: 500;
+  cursor: pointer;
+}
+.card-body { padding: 20px; }
+
+/* === TABLE === */
+.table-wrap { overflow-x: auto; }
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+th {
+  text-align: left;
+  padding: 0 16px 10px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+  border-bottom: 1px solid var(--border);
+}
+td {
+  padding: 12px 16px;
+  color: var(--text);
+  border-bottom: 1px solid var(--border);
+  vertical-align: middle;
+}
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: rgba(232,68,90,0.03); }
+
+/* === BADGES === */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 8px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+  gap: 4px;
+}
+.badge-green { background: var(--green-soft); color: var(--green); }
+.badge-amber { background: var(--amber-soft); color: var(--amber); }
+.badge-red { background: var(--red-soft); color: var(--red); }
+.badge-blue { background: var(--blue-soft); color: var(--blue); }
+.badge-rose { background: var(--rose-soft); color: var(--rose); }
+.badge-muted { background: var(--border); color: var(--text-muted); }
+
+/* === ACTIVITY FEED === */
+.activity-list { padding: 4px 0; }
+.activity-item {
+  display: flex;
+  gap: 12px;
+  padding: 12px 20px;
+  border-bottom: 1px solid var(--border);
+  align-items: flex-start;
+}
+.activity-item:last-child { border-bottom: none; }
+.activity-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  margin-top: 5px;
+}
+.activity-text { font-size: 12.5px; color: var(--text); line-height: 1.4; }
+.activity-time { font-size: 11px; color: var(--text-subtle); margin-top: 2px; }
+
+/* === MINI CHART (SVG sparkline) === */
+.sparkline-wrap {
+  height: 60px;
+  margin-top: 8px;
+}
+
+/* === EARNING BREAKDOWN === */
+.earn-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+}
+.earn-row:last-child { border-bottom: none; }
+.earn-bar-track {
+  flex: 1;
+  height: 4px;
+  background: var(--border);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.earn-bar-fill {
+  height: 100%;
+  border-radius: 2px;
+}
+.earn-label { font-size: 12px; color: var(--text-muted); width: 80px; flex-shrink: 0; }
+.earn-amount { font-size: 12px; font-weight: 600; color: var(--text); font-variant-numeric: tabular-nums; width: 64px; text-align: right; flex-shrink: 0; }
+
+/* === LIVE CALLS === */
+.live-call-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 20px;
+  border-bottom: 1px solid var(--border);
+}
+.live-call-item:last-child { border-bottom: none; }
+.live-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 13px;
+  color: #fff;
+  flex-shrink: 0;
+}
+.call-info { flex: 1; min-width: 0; }
+.call-names { font-size: 12.5px; font-weight: 500; color: var(--text); }
+.call-meta { font-size: 11px; color: var(--text-muted); }
+.call-duration {
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--green);
+  font-weight: 500;
+}
+
+/* === HOST MANAGEMENT PAGE === */
+.host-filters {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+.filter-btn {
+  padding: 5px 14px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.filter-btn.active {
+  background: var(--rose);
+  border-color: var(--rose);
+  color: #fff;
+}
+.search-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 8px 12px;
+  margin-bottom: 16px;
+}
+.search-bar input {
+  border: none;
+  background: transparent;
+  color: var(--text);
+  font-size: 13px;
+  outline: none;
+  flex: 1;
+}
+.search-bar input::placeholder { color: var(--text-subtle); }
+
+/* === USER AVATAR STACK === */
+.host-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 13px;
+  color: #fff;
+  flex-shrink: 0;
+}
+.host-name { font-weight: 500; color: var(--text); font-size: 13px; }
+.host-id { font-size: 11px; color: var(--text-muted); font-family: var(--mono); }
+
+/* === TRANSACTION PAGE === */
+.txn-amount { font-family: var(--mono); font-size: 13px; font-weight: 500; }
+.txn-credit { color: var(--green); }
+.txn-debit { color: var(--rose); }
+
+/* === SETTINGS === */
+.setting-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--border);
+}
+.setting-row:last-child { border-bottom: none; }
+.setting-label { font-size: 13px; font-weight: 500; color: var(--text); }
+.setting-desc { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+.toggle {
+  width: 36px;
+  height: 20px;
+  border-radius: 10px;
+  position: relative;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.2s;
+}
+.toggle.on { background: var(--rose); }
+.toggle.off { background: var(--border); }
+.toggle::after {
+  content: '';
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #fff;
+  top: 3px;
+  transition: left 0.2s;
+}
+.toggle.on::after { left: 19px; }
+.toggle.off::after { left: 3px; }
+.setting-input {
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text);
+  border-radius: var(--radius-sm);
+  padding: 5px 10px;
+  font-size: 13px;
+  font-family: var(--mono);
+  outline: none;
+  width: 120px;
+  text-align: right;
+}
+.section-head {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: var(--text-muted);
+  margin: 20px 0 10px;
+}
+.section-head:first-child { margin-top: 0; }
+
+/* === RESPONSIVE === */
+@media (max-width: 700px) {
+  .sidebar { width: 56px; min-width: 56px; }
+  .logo-text, .logo-badge, .nav-item span, .admin-info, .sidebar-label { display: none; }
+  .nav-item { justify-content: center; padding: 10px; }
+  .nav-badge { display: none; }
+  .stats-grid { grid-template-columns: repeat(2, 1fr); }
+  .grid-2, .grid-3 { grid-template-columns: 1fr; }
+  .content { padding: 16px; }
+  .topbar { padding: 0 16px; }
+}
+</style>
+
+<!-- LOGIN SCREEN -->
+<div id="login-screen" style="display:none;position:fixed;inset:0;background:#0A0C10;z-index:9999;display:flex;align-items:center;justify-content:center">
+  <div style="background:#13161E;border:1px solid #1F2330;border-radius:16px;padding:40px 36px;width:100%;max-width:380px;text-align:center">
+    <div style="width:52px;height:52px;border-radius:14px;background:linear-gradient(135deg,#E8445A,#F06B4A);display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:700;color:#fff;margin:0 auto 20px;font-family:Inter,sans-serif">Z</div>
+    <div style="font-family:Inter,sans-serif;font-size:22px;font-weight:700;color:#E8EAF0;margin-bottom:4px">ZIVO Admin</div>
+    <div style="font-family:Inter,sans-serif;font-size:13px;color:#8B92A5;margin-bottom:32px">Enter admin PIN</div>
+    <input id="login-pass" type="password" placeholder="PIN" style="width:100%;box-sizing:border-box;background:#0A0C10;border:1px solid #1F2330;border-radius:8px;padding:11px 14px;font-size:14px;color:#E8EAF0;font-family:Inter,sans-serif;outline:none;margin-bottom:20px">
+    <div id="login-err" style="font-family:Inter,sans-serif;font-size:12px;color:#EF4444;margin-bottom:12px;display:none"></div>
+    <button id="login-btn" onclick="doLogin()" style="width:100%;background:linear-gradient(135deg,#E8445A,#F06B4A);color:#fff;border:none;border-radius:8px;padding:12px;font-size:14px;font-weight:600;cursor:pointer;font-family:Inter,sans-serif">Sign In</button>
+  </div>
+</div>
+
+<!-- APP ROOT -->
+<div class="app" id="app-root" style="display:none">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-mark">
+        <div class="logo-icon">Z</div>
+        <div>
+          <div class="logo-text">ZIVO</div>
+          <div class="logo-badge">ADMIN PANEL</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">Dashboard</div>
+      <div class="nav-item active" onclick="showPanel('overview', this)">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+        <span>Dashboard</span>
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">Hosts</div>
+      <div class="nav-item" onclick="showPanel('host-applications', this)">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+        <span>Host Applications</span>
+        <span class="nav-badge">5</span>
+      </div>
+      <div class="nav-item" onclick="showPanel('all-hosts', this)">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        <span>All Hosts</span>
+      </div>
+      <div class="nav-item" onclick="showPanel('kyc-bank', this)">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+        <span>KYC &amp; Bank</span>
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">Users</div>
+      <div class="nav-item" onclick="showPanel('all-users', this)">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        <span>All Users</span>
+      </div>
+      <div class="nav-item" onclick="showPanel('calls', this)">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2A19.79 19.79 0 0 1 11.27 18a19.45 19.45 0 0 1-6.91-6.91 19.79 19.79 0 0 1-3.89-8.55A2 2 0 0 1 2.52 2H5.5a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L6.91 9.91a16 16 0 0 0 6.91 6.91l.59-.59a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+        <span>Calls</span>
+        <span class="nav-badge">3</span>
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">Money</div>
+      <div class="nav-item" onclick="showPanel('withdrawals', this)">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="17 11 12 6 7 11"/><line x1="12" y1="18" x2="12" y2="6"/><line x1="6" y1="18" x2="18" y2="18"/></svg>
+        <span>Withdrawals</span>
+      </div>
+      <div class="nav-item" onclick="showPanel('transactions', this)">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+        <span>Transactions</span>
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">Safety</div>
+      <div class="nav-item" onclick="showPanel('reports', this)">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        <span>Reports</span>
+      </div>
+      <div class="nav-item" onclick="showPanel('moderation', this)">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        <span>Moderation</span>
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">Live</div>
+      <div class="nav-item" onclick="showPanel('live-rooms', this)">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+        <span>Live Rooms</span>
+      </div>
+      <div class="nav-item" onclick="showPanel('gifts-rates', this)">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg>
+        <span>Gifts &amp; Rates</span>
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">Other</div>
+      <div class="nav-item" onclick="showPanel('support', this)">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        <span>Support Tickets</span>
+      </div>
+      <div class="nav-item" onclick="showPanel('notifications', this)">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+        <span>Notifications</span>
+      </div>
+      <div class="nav-item" onclick="showPanel('settings', this)">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2"/></svg>
+        <span>Settings</span>
+      </div>
+    </div>
+
+    <div class="sidebar-footer">
+      <div class="admin-pill">
+        <div class="admin-avatar">S</div>
+        <div class="admin-info">
+          <div class="admin-name">Shubham</div>
+          <div class="admin-role">Super Admin</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <div class="main">
+
+    <!-- TOPBAR -->
+    <div class="topbar">
+      <div>
+        <div class="page-title" id="page-title">Overview</div>
+      </div>
+      <div class="topbar-right">
+        <div class="topbar-date">Mon, 13 Oct 2026</div>
+        <div class="live-dot"><span class="pulse"></span> System Live</div>
+      </div>
+    </div>
+
+    <!-- CONTENT PANELS -->
+    <div class="content">
+
+      <!-- ===================== OVERVIEW ===================== -->
+      <div class="panel active" id="panel-overview">
+
+        <div class="stats-grid">
+          <div class="stat-card rose">
+            <div class="stat-label">Total Revenue</div>
+            <div class="stat-value" id="stat-revenue">…</div>
+            <div class="stat-change up">From recharges</div>
+            <div class="stat-icon-bg">₹</div>
+          </div>
+          <div class="stat-card green">
+            <div class="stat-label">Active Hosts</div>
+            <div class="stat-value" id="stat-hosts">…</div>
+            <div class="stat-change up">Approved</div>
+            <div class="stat-icon-bg">●</div>
+          </div>
+          <div class="stat-card amber">
+            <div class="stat-label">Total Callers</div>
+            <div class="stat-value" id="stat-callers">…</div>
+            <div class="stat-change up">Registered</div>
+            <div class="stat-icon-bg">👤</div>
+          </div>
+          <div class="stat-card blue">
+            <div class="stat-label">Live Calls</div>
+            <div class="stat-value" id="stat-calls">…</div>
+            <div class="stat-change up">Right now</div>
+            <div class="stat-icon-bg">📞</div>
+          </div>
+        </div>
+
+        <div class="grid-3">
+          <!-- Recent Transactions -->
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">Recent Transactions</div>
+              <div class="card-action" onclick="showPanel('transactions', null)">See all</div>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead><tr>
+                  <th>User</th><th>Type</th><th>Coins</th><th>Status</th>
+                </tr></thead>
+                <tbody id="txn-tbody">
+                  <tr><td colspan="4" style="text-align:center;color:var(--text-muted)">Loading…</td></tr>
+                  <tr><td>Dev M.</td><td>Recharge</td><td class="txn-credit">+1000</td><td><span class="badge badge-amber">Pending</span></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Earnings Split -->
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">Revenue Split</div>
+              <div class="card-action">Oct 2026</div>
+            </div>
+            <div class="card-body">
+              <div class="earn-row">
+                <div class="earn-label">ZIVO (65%)</div>
+                <div class="earn-bar-track"><div class="earn-bar-fill" style="width:65%;background:linear-gradient(90deg,var(--rose),var(--coral))"></div></div>
+                <div class="earn-amount" id="rev-zivo">₹—</div>
+              </div>
+              <div class="earn-row">
+                <div class="earn-label">Hosts (35%)</div>
+                <div class="earn-bar-track"><div class="earn-bar-fill" style="width:35%;background:var(--green)"></div></div>
+                <div class="earn-amount" id="rev-host">₹—</div>
+              </div>
+              <div class="earn-row">
+                <div class="earn-label">Pending</div>
+                <div class="earn-bar-track"><div class="earn-bar-fill" style="width:8%;background:var(--amber)"></div></div>
+                <div class="earn-amount">₹3,200</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <!-- Live Now -->
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">Live Calls Now</div>
+              <span class="badge badge-green" id="live-count-badge">3 Active</span>
+            </div>
+            <div id="live-calls-list">
+            <div class="live-call-item">
+              <div class="live-avatar" style="background:linear-gradient(135deg,#E8445A,#F06B4A)">S</div>
+              <div class="call-info">
+                <div class="call-names">Sneha R. ↔ Caller #2041</div>
+                <div class="call-meta">12 coins/min · Audio</div>
+              </div>
+              <div class="call-duration">04:32</div>
+            </div>
+            <div class="live-call-item">
+              <div class="live-avatar" style="background:linear-gradient(135deg,#8B5CF6,#6366F1)">A</div>
+              <div class="call-info">
+                <div class="call-names">Anjali M. ↔ Caller #1887</div>
+                <div class="call-meta">8 coins/min · Audio</div>
+              </div>
+              <div class="call-duration">02:18</div>
+            </div>
+            <div class="live-call-item">
+              <div class="live-avatar" style="background:linear-gradient(135deg,#0EA5E9,#06B6D4)">P</div>
+              <div class="call-info">
+                <div class="call-names">Preet K. ↔ Caller #3312</div>
+                <div class="call-meta">15 coins/min · LIVE</div>
+              </div>
+              <div class="call-duration">11:05</div>
+            </div>
+            </div><!-- end live-calls-list -->
+          </div>
+
+          <!-- Recent Activity -->
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">Activity Feed</div>
+            </div>
+            <div class="activity-list">
+              <div class="activity-item">
+                <div class="activity-dot" style="background:var(--green)"></div>
+                <div>
+                  <div class="activity-text">New host <strong>Naina V.</strong> approved</div>
+                  <div class="activity-time">2 min ago</div>
+                </div>
+              </div>
+              <div class="activity-item">
+                <div class="activity-dot" style="background:var(--rose)"></div>
+                <div>
+                  <div class="activity-text">Recharge ₹500 by <strong>Arjun S.</strong></div>
+                  <div class="activity-time">8 min ago</div>
+                </div>
+              </div>
+              <div class="activity-item">
+                <div class="activity-dot" style="background:var(--amber)"></div>
+                <div>
+                  <div class="activity-text">Host <strong>Rohan D.</strong> withdrawal request ₹2,400</div>
+                  <div class="activity-time">22 min ago</div>
+                </div>
+              </div>
+              <div class="activity-item">
+                <div class="activity-dot" style="background:var(--blue)"></div>
+                <div>
+                  <div class="activity-text">Caller #1209 account flagged — low balance</div>
+                  <div class="activity-time">1 hr ago</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===================== HOST APPLICATIONS ===================== -->
+      <div class="panel" id="panel-host-applications">
+        <div class="stats-grid" style="grid-template-columns:repeat(3,1fr)">
+          <div class="stat-card amber"><div class="stat-label">Pending Review</div><div class="stat-value">5</div><div class="stat-change" style="color:var(--amber)">Waiting approval</div></div>
+          <div class="stat-card green"><div class="stat-label">Approved Today</div><div class="stat-value">2</div><div class="stat-change up">↑ Good pace</div></div>
+          <div class="stat-card red"><div class="stat-label">Rejected</div><div class="stat-value">1</div><div class="stat-change" style="color:var(--red)">This week</div></div>
+        </div>
+        <div class="card">
+          <div class="card-header"><div class="card-title">Pending Applications</div></div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Name</th><th>Applied</th><th>Phone</th><th>Age</th><th>Action</th></tr></thead>
+              <tbody id="host-apps-tbody">
+                <tr><td><div class="host-name">Naina Verma</div><div class="host-id">naina_v</div></td><td>12 Oct 2026</td><td>+91 98XXX XX901</td><td>23</td><td><span class="badge badge-green" style="cursor:pointer;margin-right:6px">Approve</span><span class="badge badge-red" style="cursor:pointer">Reject</span></td></tr>
+                <tr><td><div class="host-name">Pooja Sharma</div><div class="host-id">poo_sha</div></td><td>11 Oct 2026</td><td>+91 97XXX XX412</td><td>25</td><td><span class="badge badge-green" style="cursor:pointer;margin-right:6px">Approve</span><span class="badge badge-red" style="cursor:pointer">Reject</span></td></tr>
+                <tr><td><div class="host-name">Divya Singh</div><div class="host-id">divya_s</div></td><td>10 Oct 2026</td><td>+91 99XXX XX228</td><td>21</td><td><span class="badge badge-green" style="cursor:pointer;margin-right:6px">Approve</span><span class="badge badge-red" style="cursor:pointer">Reject</span></td></tr>
+                <tr><td><div class="host-name">Kritika Jain</div><div class="host-id">kriti_j</div></td><td>9 Oct 2026</td><td>+91 96XXX XX774</td><td>27</td><td><span class="badge badge-green" style="cursor:pointer;margin-right:6px">Approve</span><span class="badge badge-red" style="cursor:pointer">Reject</span></td></tr>
+                <tr><td><div class="host-name">Simran Kaur</div><div class="host-id">sim_k</div></td><td>8 Oct 2026</td><td>+91 95XXX XX341</td><td>22</td><td><span class="badge badge-green" style="cursor:pointer;margin-right:6px">Approve</span><span class="badge badge-red" style="cursor:pointer">Reject</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===================== ALL HOSTS ===================== -->
+      <div class="panel" id="panel-all-hosts">
+        <div class="host-filters">
+          <button class="filter-btn active">All (48)</button>
+          <button class="filter-btn">Active (41)</button>
+          <button class="filter-btn">Pending (5)</button>
+          <button class="filter-btn">Suspended (2)</button>
+        </div>
+        <div class="search-bar">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input type="text" placeholder="Search host name or ID…">
+        </div>
+        <div class="card">
+          <div class="table-wrap">
+            <table>
+              <thead><tr>
+                <th>Host</th><th>Rate (audio/video)</th><th>Online</th><th>Status</th><th>Action</th>
+              </tr></thead>
+              <tbody id="hosts-tbody">
+                <tr><td colspan="5" style="text-align:center;color:var(--text-muted)">Loading…</td></tr>
+                <tr style="display:none">
+                  <td><div style="display:flex;align-items:center;gap:10px"><div class="host-avatar" style="background:linear-gradient(135deg,#E8445A,#F06B4A)">S</div><div><div class="host-name">Sneha Rao</div><div class="host-id">#H0041</div></div></div></td>
+                  <td>12 Sep 2026</td><td>₹4,830</td><td>312</td><td>⭐ 4.9</td>
+                  <td><span class="badge badge-green">Active</span></td>
+                </tr>
+                <tr>
+                  <td><div style="display:flex;align-items:center;gap:10px"><div class="host-avatar" style="background:linear-gradient(135deg,#8B5CF6,#6366F1)">A</div><div><div class="host-name">Anjali Mehta</div><div class="host-id">#H0038</div></div></div></td>
+                  <td>5 Sep 2026</td><td>₹3,210</td><td>241</td><td>⭐ 4.7</td>
+                  <td><span class="badge badge-green">Active</span></td>
+                </tr>
+                <tr>
+                  <td><div style="display:flex;align-items:center;gap:10px"><div class="host-avatar" style="background:linear-gradient(135deg,#0EA5E9,#06B6D4)">P</div><div><div class="host-name">Preet Kaur</div><div class="host-id">#H0022</div></div></div></td>
+                  <td>1 Aug 2026</td><td>₹9,100</td><td>780</td><td>⭐ 4.8</td>
+                  <td><span class="badge badge-green">Active</span></td>
+                </tr>
+                <tr>
+                  <td><div style="display:flex;align-items:center;gap:10px"><div class="host-avatar" style="background:linear-gradient(135deg,#F59E0B,#EF4444)">N</div><div><div class="host-name">Naina Verma</div><div class="host-id">#H0048</div></div></div></td>
+                  <td>12 Oct 2026</td><td>₹0</td><td>0</td><td>—</td>
+                  <td><span class="badge badge-amber">Pending</span></td>
+                </tr>
+                <tr>
+                  <td><div style="display:flex;align-items:center;gap:10px"><div class="host-avatar" style="background:#374151">R</div><div><div class="host-name">Riya Sharma</div><div class="host-id">#H0031</div></div></div></td>
+                  <td>20 Aug 2026</td><td>₹1,200</td><td>90</td><td>⭐ 3.2</td>
+                  <td><span class="badge badge-red">Suspended</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===================== CALLERS ===================== -->
+      <div class="panel" id="panel-users">
+        <div class="stats-grid" style="grid-template-columns:repeat(3,1fr)">
+          <div class="stat-card blue"><div class="stat-label">Total Callers</div><div class="stat-value">2,341</div><div class="stat-change up">↑ 230 this week</div></div>
+          <div class="stat-card rose"><div class="stat-label">Active Today</div><div class="stat-value">384</div><div class="stat-change up">↑ 12%</div></div>
+          <div class="stat-card amber"><div class="stat-label">Avg Coins/User</div><div class="stat-value">142</div><div class="stat-change down">↓ 3%</div></div>
+        </div>
+        <div class="card">
+          <div class="card-header"><div class="card-title">Caller Accounts</div></div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Caller</th><th>Joined</th><th>Coins Left</th><th>Total Spent</th><th>Last Active</th><th>Status</th></tr></thead>
+              <tbody>
+                <tr><td><div><div class="host-name">Arjun Sharma</div><div class="host-id">#C2041</div></div></td><td>1 Oct 2026</td><td>488</td><td>₹620</td><td>Today</td><td><span class="badge badge-green">Active</span></td></tr>
+                <tr><td><div><div class="host-name">Dev Malhotra</div><div class="host-id">#C1887</div></div></td><td>15 Sep 2026</td><td>12</td><td>₹1,840</td><td>Today</td><td><span class="badge badge-amber">Low Coins</span></td></tr>
+                <tr><td><div><div class="host-name">Karan Joshi</div><div class="host-id">#C3312</div></div></td><td>28 Sep 2026</td><td>0</td><td>₹240</td><td>3 days ago</td><td><span class="badge badge-red">No Coins</span></td></tr>
+                <tr><td><div><div class="host-name">Rahul Singh</div><div class="host-id">#C1209</div></div></td><td>10 Aug 2026</td><td>55</td><td>₹3,100</td><td>Yesterday</td><td><span class="badge badge-green">Active</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===================== LIVE CALLS ===================== -->
+      <div class="panel" id="panel-calls">
+        <div class="stats-grid" style="grid-template-columns:repeat(3,1fr)">
+          <div class="stat-card rose"><div class="stat-label">Live Now</div><div class="stat-value">3</div><div class="stat-change" style="color:var(--green)">↑ 2 started last 5 min</div></div>
+          <div class="stat-card green"><div class="stat-label">Calls Today</div><div class="stat-value">187</div><div class="stat-change up">↑ ongoing</div></div>
+          <div class="stat-card amber"><div class="stat-label">Avg Duration</div><div class="stat-value">6m 14s</div><div class="stat-change up">↑ 0:42 vs yesterday</div></div>
+        </div>
+        <div class="card">
+          <div class="card-header"><div class="card-title">Active Sessions</div><span class="badge badge-green" style="animation:pulse 2s infinite">● Live</span></div>
+          <div class="live-call-item">
+            <div class="live-avatar" style="background:linear-gradient(135deg,#E8445A,#F06B4A)">S</div>
+            <div class="call-info">
+              <div class="call-names">Sneha Rao (#H0041) ↔ Arjun Sharma (#C2041)</div>
+              <div class="call-meta">12 coins/min · Audio · Session #8812</div>
+            </div>
+            <span class="badge badge-blue" style="margin-right:12px">04:32</span>
+            <span class="badge badge-red" style="cursor:pointer">End</span>
+          </div>
+          <div class="live-call-item">
+            <div class="live-avatar" style="background:linear-gradient(135deg,#8B5CF6,#6366F1)">A</div>
+            <div class="call-info">
+              <div class="call-names">Anjali Mehta (#H0038) ↔ Dev Malhotra (#C1887)</div>
+              <div class="call-meta">8 coins/min · Audio · Session #8813</div>
+            </div>
+            <span class="badge badge-blue" style="margin-right:12px">02:18</span>
+            <span class="badge badge-red" style="cursor:pointer">End</span>
+          </div>
+          <div class="live-call-item">
+            <div class="live-avatar" style="background:linear-gradient(135deg,#0EA5E9,#06B6D4)">P</div>
+            <div class="call-info">
+              <div class="call-names">Preet Kaur (#H0022) ↔ Karan Joshi (#C3312)</div>
+              <div class="call-meta">15 coins/min · LIVE Stream · Session #8810</div>
+            </div>
+            <span class="badge badge-blue" style="margin-right:12px">11:05</span>
+            <span class="badge badge-red" style="cursor:pointer">End</span>
+          </div>
+        </div>
+        <div class="card" style="margin-top:16px">
+          <div class="card-header"><div class="card-title">Recent Ended Calls</div></div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Host</th><th>Caller</th><th>Duration</th><th>Coins Used</th><th>Ended</th></tr></thead>
+              <tbody>
+                <tr><td>Sneha Rao</td><td>#C1822</td><td>3m 12s</td><td>38</td><td>12 min ago</td></tr>
+                <tr><td>Rohan D.</td><td>#C0991</td><td>1m 00s</td><td>8</td><td>25 min ago</td></tr>
+                <tr><td>Anjali M.</td><td>#C2244</td><td>8m 44s</td><td>70</td><td>42 min ago</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===================== TRANSACTIONS ===================== -->
+      <div class="panel" id="panel-transactions">
+        <div class="host-filters">
+          <button class="filter-btn active">All</button>
+          <button class="filter-btn">Recharges</button>
+          <button class="filter-btn">Call Deductions</button>
+          <button class="filter-btn">Host Payouts</button>
+        </div>
+        <div class="card">
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>#</th><th>User</th><th>Type</th><th>Amount (₹)</th><th>Coins</th><th>Date</th><th>Status</th></tr></thead>
+              <tbody id="txn-all-tbody">
+                <tr><td class="host-id">TXN9901</td><td>Arjun S.</td><td>Recharge</td><td class="txn-credit">+₹500</td><td>+500</td><td>Today 6:42 PM</td><td><span class="badge badge-green">Done</span></td></tr>
+                <tr><td class="host-id">TXN9900</td><td>Meera P.</td><td>Call Deduct</td><td class="txn-debit">−₹12</td><td>−12</td><td>Today 6:38 PM</td><td><span class="badge badge-green">Done</span></td></tr>
+                <tr><td class="host-id">TXN9899</td><td>Ravi K.</td><td>Recharge</td><td class="txn-credit">+₹200</td><td>+200</td><td>Today 6:30 PM</td><td><span class="badge badge-green">Done</span></td></tr>
+                <tr><td class="host-id">TXN9898</td><td>Dev M.</td><td>Recharge</td><td class="txn-credit">+₹1,000</td><td>+1000</td><td>Today 6:15 PM</td><td><span class="badge badge-amber">Pending</span></td></tr>
+                <tr><td class="host-id">TXN9897</td><td>Sneha R. (Host)</td><td>Payout</td><td class="txn-debit">−₹2,400</td><td>—</td><td>Today 4:00 PM</td><td><span class="badge badge-amber">Processing</span></td></tr>
+                <tr><td class="host-id">TXN9896</td><td>Priya T.</td><td>Call Deduct</td><td class="txn-debit">−₹8</td><td>−8</td><td>Today 3:52 PM</td><td><span class="badge badge-green">Done</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===================== EARNINGS ===================== -->
+      <div class="panel" id="panel-earnings">
+        <div class="stats-grid">
+          <div class="stat-card rose"><div class="stat-label">Gross Revenue</div><div class="stat-value">₹1,24,830</div><div class="stat-change up">↑ 18.4%</div></div>
+          <div class="stat-card green"><div class="stat-label">ZIVO Cut (65%)</div><div class="stat-value">₹81,140</div><div class="stat-change up">Net profit</div></div>
+          <div class="stat-card amber"><div class="stat-label">Host Payouts (35%)</div><div class="stat-value">₹43,690</div><div class="stat-change" style="color:var(--text-muted)">Pending: ₹8,200</div></div>
+          <div class="stat-card blue"><div class="stat-label">Pending Recharges</div><div class="stat-value">₹3,200</div><div class="stat-change" style="color:var(--amber)">Awaiting confirmation</div></div>
+        </div>
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-header"><div class="card-title">Top Earning Hosts</div><div class="card-action">Oct 2026</div></div>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>Host</th><th>Gross</th><th>Their 35%</th></tr></thead>
+                <tbody>
+                  <tr><td>Preet Kaur</td><td>₹26,000</td><td>₹9,100</td></tr>
+                  <tr><td>Sneha Rao</td><td>₹13,800</td><td>₹4,830</td></tr>
+                  <tr><td>Anjali Mehta</td><td>₹9,170</td><td>₹3,210</td></tr>
+                  <tr><td>Rohan Dey</td><td>₹6,400</td><td>₹2,240</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header"><div class="card-title">Monthly Breakdown</div></div>
+            <div class="card-body">
+              <div class="earn-row"><div class="earn-label">Aug 2026</div><div class="earn-bar-track"><div class="earn-bar-fill" style="width:42%;background:var(--blue)"></div></div><div class="earn-amount">₹52,000</div></div>
+              <div class="earn-row"><div class="earn-label">Sep 2026</div><div class="earn-bar-track"><div class="earn-bar-fill" style="width:72%;background:var(--blue)"></div></div><div class="earn-amount">₹89,400</div></div>
+              <div class="earn-row"><div class="earn-label">Oct 2026</div><div class="earn-bar-track"><div class="earn-bar-fill" style="width:100%;background:linear-gradient(90deg,var(--rose),var(--coral))"></div></div><div class="earn-amount">₹1,24,830</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===================== SETTINGS ===================== -->
+      <div class="panel" id="panel-settings">
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-header"><div class="card-title">Platform Settings</div></div>
+            <div class="card-body">
+              <div class="section-head">Billing</div>
+              <div class="setting-row">
+                <div><div class="setting-label">Coins per minute (base)</div><div class="setting-desc">Default rate for new hosts</div></div>
+                <input class="setting-input" type="number" value="8">
+              </div>
+              <div class="setting-row">
+                <div><div class="setting-label">Host Revenue Share</div><div class="setting-desc">Host earns 35% of call coins</div></div>
+                <input class="setting-input" type="text" value="35%">
+              </div>
+              <div class="setting-row">
+                <div><div class="setting-label">Free first call</div><div class="setting-desc">Currently disabled — all calls paid</div></div>
+                <div class="toggle off" onclick="this.classList.toggle('on');this.classList.toggle('off')"></div>
+              </div>
+              <div class="section-head">Payouts</div>
+              <div class="setting-row">
+                <div><div class="setting-label">Payout gateway</div><div class="setting-desc">Cashfree (configured)</div></div>
+                <span class="badge badge-green">Active</span>
+              </div>
+              <div class="setting-row">
+                <div><div class="setting-label">Auto payout</div><div class="setting-desc">Auto-release host earnings weekly</div></div>
+                <div class="toggle off" onclick="this.classList.toggle('on');this.classList.toggle('off')"></div>
+              </div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header"><div class="card-title">System</div></div>
+            <div class="card-body">
+              <div class="section-head">Backend</div>
+              <div class="setting-row">
+                <div><div class="setting-label">Cloudflare Worker</div><div class="setting-desc">zivo-api.workers.dev</div></div>
+                <span class="badge badge-green">Live</span>
+              </div>
+              <div class="setting-row">
+                <div><div class="setting-label">Agora (LIVE)</div><div class="setting-desc">Real-time calls & live streams</div></div>
+                <span class="badge badge-green">Active</span>
+              </div>
+              <div class="setting-row">
+                <div><div class="setting-label">Push Notifications</div><div class="setting-desc">FCM configured</div></div>
+                <div class="toggle on" onclick="this.classList.toggle('on');this.classList.toggle('off')"></div>
+              </div>
+              <div class="section-head">Maintenance</div>
+              <div class="setting-row">
+                <div><div class="setting-label">Maintenance Mode</div><div class="setting-desc">Takes app offline for users</div></div>
+                <div class="toggle off" onclick="this.classList.toggle('on');this.classList.toggle('off')"></div>
+              </div>
+              <div class="setting-row">
+                <div><div class="setting-label">New registrations</div><div class="setting-desc">Allow new user sign-ups</div></div>
+                <div class="toggle on" onclick="this.classList.toggle('on');this.classList.toggle('off')"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===================== KYC & BANK ===================== -->
+      <div class="panel" id="panel-kyc-bank">
+        <div class="card">
+          <div class="card-header"><div class="card-title">KYC Verification Requests</div><span class="badge badge-amber">3 Pending</span></div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Host</th><th>Aadhar</th><th>PAN</th><th>Bank Account</th><th>KYC Status</th><th>Action</th></tr></thead>
+              <tbody>
+                <tr><td><div class="host-name">Sneha Rao</div><div class="host-id">#H0041</div></td><td><span class="badge badge-green">Verified</span></td><td><span class="badge badge-green">Verified</span></td><td>SBI ••••4821</td><td><span class="badge badge-green">Complete</span></td><td><span class="badge badge-blue" style="cursor:pointer">View</span></td></tr>
+                <tr><td><div class="host-name">Naina Verma</div><div class="host-id">#H0048</div></td><td><span class="badge badge-amber">Pending</span></td><td><span class="badge badge-amber">Pending</span></td><td>HDFC ••••2210</td><td><span class="badge badge-amber">In Review</span></td><td><span class="badge badge-green" style="cursor:pointer">Verify</span></td></tr>
+                <tr><td><div class="host-name">Preet Kaur</div><div class="host-id">#H0022</div></td><td><span class="badge badge-green">Verified</span></td><td><span class="badge badge-green">Verified</span></td><td>ICICI ••••9934</td><td><span class="badge badge-green">Complete</span></td><td><span class="badge badge-blue" style="cursor:pointer">View</span></td></tr>
+                <tr><td><div class="host-name">Divya Singh</div><div class="host-id">#H0049</div></td><td><span class="badge badge-red">Missing</span></td><td><span class="badge badge-amber">Pending</span></td><td>—</td><td><span class="badge badge-red">Incomplete</span></td><td><span class="badge badge-amber" style="cursor:pointer">Request</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===================== ALL USERS ===================== -->
+      <div class="panel" id="panel-all-users">
+        <div class="stats-grid" style="grid-template-columns:repeat(3,1fr)">
+          <div class="stat-card blue"><div class="stat-label">Total Users</div><div class="stat-value">2,341</div><div class="stat-change up">↑ 230 this week</div></div>
+          <div class="stat-card green"><div class="stat-label">Active Today</div><div class="stat-value">384</div><div class="stat-change up">↑ 12%</div></div>
+          <div class="stat-card amber"><div class="stat-label">Avg Coins/User</div><div class="stat-value">142</div><div class="stat-change down">↓ 3%</div></div>
+        </div>
+        <div class="search-bar">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input type="text" placeholder="Search username or user ID…">
+        </div>
+        <div class="card">
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>User</th><th>Joined</th><th>Coins</th><th>Total Spent</th><th>Last Active</th><th>Status</th></tr></thead>
+              <tbody id="users-tbody">
+                <tr><td><div><div class="host-name">Arjun Sharma</div><div class="host-id">#C2041 · arjun_s</div></div></td><td>1 Oct 2026</td><td>488</td><td>₹620</td><td>Today</td><td><span class="badge badge-green">Active</span></td></tr>
+                <tr><td><div><div class="host-name">Dev Malhotra</div><div class="host-id">#C1887 · dev_m</div></div></td><td>15 Sep 2026</td><td>12</td><td>₹1,840</td><td>Today</td><td><span class="badge badge-amber">Low Coins</span></td></tr>
+                <tr><td><div><div class="host-name">Karan Joshi</div><div class="host-id">#C3312 · karan_j</div></div></td><td>28 Sep 2026</td><td>0</td><td>₹240</td><td>3 days ago</td><td><span class="badge badge-red">No Coins</span></td></tr>
+                <tr><td><div><div class="host-name">Rahul Singh</div><div class="host-id">#C1209 · rahul_s</div></div></td><td>10 Aug 2026</td><td>55</td><td>₹3,100</td><td>Yesterday</td><td><span class="badge badge-green">Active</span></td></tr>
+                <tr><td><div><div class="host-name">montybadhwar0720</div><div class="host-id">#C0001</div></div></td><td>1 Aug 2026</td><td>1,250</td><td>₹4,800</td><td>Today</td><td><span class="badge badge-green">Active</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===================== WITHDRAWALS ===================== -->
+      <div class="panel" id="panel-withdrawals">
+        <div class="stats-grid" style="grid-template-columns:repeat(3,1fr)">
+          <div class="stat-card amber"><div class="stat-label">Pending Requests</div><div class="stat-value">4</div><div class="stat-change" style="color:var(--amber)">Awaiting payout</div></div>
+          <div class="stat-card green"><div class="stat-label">Paid This Month</div><div class="stat-value">₹38,400</div><div class="stat-change up">↑ 22%</div></div>
+          <div class="stat-card rose"><div class="stat-label">Total Pending</div><div class="stat-value">₹8,200</div><div class="stat-change" style="color:var(--amber)">To be released</div></div>
+        </div>
+        <div class="card">
+          <div class="card-header"><div class="card-title">Withdrawal Requests</div></div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Host</th><th>Bank</th><th>Amount</th><th>Requested</th><th>Status</th><th>Action</th></tr></thead>
+              <tbody>
+                <tr><td><div class="host-name">Sneha Rao</div><div class="host-id">#H0041</div></td><td>SBI ••••4821</td><td class="txn-debit">₹2,400</td><td>Today 4:00 PM</td><td><span class="badge badge-amber">Processing</span></td><td><span class="badge badge-green" style="cursor:pointer">Pay Now</span></td></tr>
+                <tr><td><div class="host-name">Preet Kaur</div><div class="host-id">#H0022</div></td><td>ICICI ••••9934</td><td class="txn-debit">₹3,800</td><td>Yesterday</td><td><span class="badge badge-amber">Pending</span></td><td><span class="badge badge-green" style="cursor:pointer">Pay Now</span></td></tr>
+                <tr><td><div class="host-name">Anjali Mehta</div><div class="host-id">#H0038</div></td><td>HDFC ••••7712</td><td class="txn-debit">₹1,200</td><td>10 Oct 2026</td><td><span class="badge badge-amber">Pending</span></td><td><span class="badge badge-green" style="cursor:pointer">Pay Now</span></td></tr>
+                <tr><td><div class="host-name">Rohan Dey</div><div class="host-id">#H0033</div></td><td>Axis ••••3301</div></td><td class="txn-debit">₹800</td><td>9 Oct 2026</td><td><span class="badge badge-green">Paid</span></td><td><span class="badge badge-muted">Done</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===================== REPORTS ===================== -->
+      <div class="panel" id="panel-reports">
+        <div class="stats-grid" style="grid-template-columns:repeat(3,1fr)">
+          <div class="stat-card red"><div class="stat-label">Open Reports</div><div class="stat-value">7</div><div class="stat-change" style="color:var(--red)">Needs review</div></div>
+          <div class="stat-card amber"><div class="stat-label">In Review</div><div class="stat-value">3</div><div class="stat-change" style="color:var(--amber)">Being investigated</div></div>
+          <div class="stat-card green"><div class="stat-label">Resolved This Week</div><div class="stat-value">12</div><div class="stat-change up">↑ Good</div></div>
+        </div>
+        <div class="card">
+          <div class="card-header"><div class="card-title">User Reports</div></div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Reporter</th><th>Reported</th><th>Reason</th><th>Date</th><th>Status</th><th>Action</th></tr></thead>
+              <tbody>
+                <tr><td>#C2041</td><td>Host #H0031</td><td>Rude behaviour</td><td>Today</td><td><span class="badge badge-red">Open</span></td><td><span class="badge badge-blue" style="cursor:pointer">Review</span></td></tr>
+                <tr><td>#C1887</td><td>Host #H0038</td><td>Call disconnected</td><td>Yesterday</td><td><span class="badge badge-amber">In Review</span></td><td><span class="badge badge-blue" style="cursor:pointer">Review</span></td></tr>
+                <tr><td>#C3312</td><td>Host #H0022</td><td>Coins not refunded</td><td>10 Oct</td><td><span class="badge badge-amber">In Review</span></td><td><span class="badge badge-blue" style="cursor:pointer">Review</span></td></tr>
+                <tr><td>#C0991</td><td>Host #H0041</td><td>Inappropriate content</td><td>9 Oct</td><td><span class="badge badge-green">Resolved</span></td><td><span class="badge badge-muted">Done</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===================== MODERATION ===================== -->
+      <div class="panel" id="panel-moderation">
+        <div class="stats-grid" style="grid-template-columns:repeat(3,1fr)">
+          <div class="stat-card red"><div class="stat-label">Flagged Accounts</div><div class="stat-value">4</div><div class="stat-change" style="color:var(--red)">Under watch</div></div>
+          <div class="stat-card amber"><div class="stat-label">Suspended Today</div><div class="stat-value">1</div><div class="stat-change" style="color:var(--amber)">Action taken</div></div>
+          <div class="stat-card green"><div class="stat-label">Cleared</div><div class="stat-value">8</div><div class="stat-change up">This week</div></div>
+        </div>
+        <div class="card">
+          <div class="card-header"><div class="card-title">Moderation Queue</div></div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Account</th><th>Type</th><th>Reason</th><th>Flagged</th><th>Status</th><th>Action</th></tr></thead>
+              <tbody>
+                <tr><td><div class="host-name">Riya Sharma</div><div class="host-id">#H0031</div></td><td>Host</td><td>Multiple complaints</td><td>8 Oct</td><td><span class="badge badge-red">Suspended</span></td><td><span class="badge badge-green" style="cursor:pointer">Reinstate</span></td></tr>
+                <tr><td><div class="host-name">Unknown User</div><div class="host-id">#C2810</div></td><td>Caller</td><td>Abusive language</td><td>10 Oct</td><td><span class="badge badge-amber">Flagged</span></td><td><span class="badge badge-red" style="cursor:pointer">Suspend</span></td></tr>
+                <tr><td><div class="host-name">Pooja D.</div><div class="host-id">#H0044</div></td><td>Host</td><td>Low ratings pattern</td><td>11 Oct</td><td><span class="badge badge-amber">Warning</span></td><td><span class="badge badge-blue" style="cursor:pointer">Review</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===================== LIVE ROOMS ===================== -->
+      <div class="panel" id="panel-live-rooms">
+        <div class="stats-grid" style="grid-template-columns:repeat(3,1fr)">
+          <div class="stat-card rose"><div class="stat-label">Active Rooms</div><div class="stat-value">1</div><div class="stat-change" style="color:var(--green)">● Live now</div></div>
+          <div class="stat-card green"><div class="stat-label">Viewers Now</div><div class="stat-value">0</div><div class="stat-change up">Real-time</div></div>
+          <div class="stat-card amber"><div class="stat-label">Rooms Today</div><div class="stat-value">3</div><div class="stat-change up">↑ 1 vs yesterday</div></div>
+        </div>
+        <div class="card">
+          <div class="card-header"><div class="card-title">Live Sessions</div><span class="badge badge-green"><span class="pulse" style="display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--green);margin-right:4px"></span>1 Room Live</span></div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Host</th><th>Room ID</th><th>Viewers</th><th>Gifts Received</th><th>Started</th><th>Status</th></tr></thead>
+              <tbody>
+                <tr><td><div class="host-name">Preet Kaur</div><div class="host-id">#H0022</div></td><td class="host-id">ROOM-8810</td><td>0</td><td>🎁 1,200 coins</td><td>19:54</td><td><span class="badge badge-green">● Live</span></td></tr>
+                <tr><td><div class="host-name">Sneha Rao</div><div class="host-id">#H0041</div></td><td class="host-id">ROOM-8801</td><td>—</td><td>🎁 4,800 coins</td><td>18:30</td><td><span class="badge badge-muted">Ended</span></td></tr>
+                <tr><td><div class="host-name">Anjali Mehta</div><div class="host-id">#H0038</div></td><td class="host-id">ROOM-8796</td><td>—</td><td>🎁 2,100 coins</td><td>16:15</td><td><span class="badge badge-muted">Ended</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===================== GIFTS & RATES ===================== -->
+      <div class="panel" id="panel-gifts-rates">
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-header"><div class="card-title">Gift Catalog</div><span class="badge badge-rose">8 Gifts</span></div>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>Gift</th><th>Name</th><th>Coins</th><th>Times Sent</th></tr></thead>
+                <tbody>
+                  <tr><td>🌹</td><td>Rose</td><td>10</td><td>2,841</td></tr>
+                  <tr><td>💎</td><td>Diamond</td><td>100</td><td>412</td></tr>
+                  <tr><td>🚗</td><td>Sports Car</td><td>500</td><td>88</td></tr>
+                  <tr><td>🏠</td><td>Castle</td><td>1,000</td><td>31</td></tr>
+                  <tr><td>🦋</td><td>Butterfly</td><td>25</td><td>1,204</td></tr>
+                  <tr><td>🎂</td><td>Birthday Cake</td><td>50</td><td>677</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header"><div class="card-title">Call Rates</div></div>
+            <div class="card-body">
+              <div class="section-head">Audio Calls</div>
+              <div class="setting-row"><div><div class="setting-label">Minimum rate</div><div class="setting-desc">Per minute</div></div><input class="setting-input" type="number" value="8"></div>
+              <div class="setting-row"><div><div class="setting-label">Maximum rate</div><div class="setting-desc">Per minute</div></div><input class="setting-input" type="number" value="50"></div>
+              <div class="section-head">Video Calls</div>
+              <div class="setting-row"><div><div class="setting-label">Minimum rate</div><div class="setting-desc">Per minute</div></div><input class="setting-input" type="number" value="15"></div>
+              <div class="setting-row"><div><div class="setting-label">Maximum rate</div><div class="setting-desc">Per minute</div></div><input class="setting-input" type="number" value="100"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===================== SUPPORT TICKETS ===================== -->
+      <div class="panel" id="panel-support">
+        <div class="stats-grid" style="grid-template-columns:repeat(3,1fr)">
+          <div class="stat-card red"><div class="stat-label">Open Tickets</div><div class="stat-value">6</div><div class="stat-change" style="color:var(--red)">Needs reply</div></div>
+          <div class="stat-card amber"><div class="stat-label">In Progress</div><div class="stat-value">2</div><div class="stat-change" style="color:var(--amber)">Being handled</div></div>
+          <div class="stat-card green"><div class="stat-label">Closed Today</div><div class="stat-value">5</div><div class="stat-change up">Good response time</div></div>
+        </div>
+        <div class="card">
+          <div class="card-header"><div class="card-title">Support Tickets</div></div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Ticket</th><th>User</th><th>Subject</th><th>Date</th><th>Status</th><th>Action</th></tr></thead>
+              <tbody>
+                <tr><td class="host-id">#T0088</td><td>Arjun S.</td><td>Recharge not credited</td><td>Today 5:12 PM</td><td><span class="badge badge-red">Open</span></td><td><span class="badge badge-blue" style="cursor:pointer">Reply</span></td></tr>
+                <tr><td class="host-id">#T0087</td><td>Sneha R.</td><td>Withdrawal delayed</td><td>Today 3:44 PM</td><td><span class="badge badge-amber">In Progress</span></td><td><span class="badge badge-blue" style="cursor:pointer">Reply</span></td></tr>
+                <tr><td class="host-id">#T0086</td><td>Dev M.</td><td>Call ended suddenly</td><td>Yesterday</td><td><span class="badge badge-red">Open</span></td><td><span class="badge badge-blue" style="cursor:pointer">Reply</span></td></tr>
+                <tr><td class="host-id">#T0085</td><td>Karan J.</td><td>Can't login</td><td>11 Oct</td><td><span class="badge badge-green">Closed</span></td><td><span class="badge badge-muted">Done</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===================== NOTIFICATIONS ===================== -->
+      <div class="panel" id="panel-notifications">
+        <div class="card">
+          <div class="card-header"><div class="card-title">Send Notification</div></div>
+          <div class="card-body">
+            <div class="setting-row">
+              <div><div class="setting-label">Target audience</div><div class="setting-desc">Who receives this notification</div></div>
+              <select class="setting-input" style="width:160px;padding:5px 8px">
+                <option>All Users</option>
+                <option>All Hosts</option>
+                <option>All Callers</option>
+                <option>Specific User</option>
+              </select>
+            </div>
+            <div class="setting-row">
+              <div><div class="setting-label">Title</div><div class="setting-desc">Notification headline</div></div>
+              <input class="setting-input" type="text" style="width:200px" placeholder="e.g. New offer!">
+            </div>
+            <div style="padding:14px 0;border-bottom:1px solid var(--border)">
+              <div class="setting-label" style="margin-bottom:8px;font-size:13px;font-weight:500;color:var(--text)">Message</div>
+              <textarea style="width:100%;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-size:13px;padding:10px;outline:none;resize:vertical;min-height:80px;font-family:var(--font)" placeholder="Notification body text…"></textarea>
+            </div>
+            <div style="padding-top:14px">
+              <button style="background:linear-gradient(135deg,var(--rose),var(--coral));color:#fff;border:none;border-radius:var(--radius-sm);padding:8px 20px;font-size:13px;font-weight:600;cursor:pointer">Send Notification</button>
+            </div>
+          </div>
+        </div>
+        <div class="card" style="margin-top:16px">
+          <div class="card-header"><div class="card-title">Recent Sent</div></div>
+          <div class="activity-list">
+            <div class="activity-item"><div class="activity-dot" style="background:var(--blue)"></div><div><div class="activity-text"><strong>All Users</strong> — "New host Sneha Rao is now live!"</div><div class="activity-time">2 hours ago · 2,341 delivered</div></div></div>
+            <div class="activity-item"><div class="activity-dot" style="background:var(--rose)"></div><div><div class="activity-text"><strong>All Callers</strong> — "Recharge now and get 10% bonus coins!"</div><div class="activity-time">Yesterday · 1,890 delivered</div></div></div>
+            <div class="activity-item"><div class="activity-dot" style="background:var(--green)"></div><div><div class="activity-text"><strong>All Hosts</strong> — "Withdrawals processed for Oct week 2"</div><div class="activity-time">2 days ago · 48 delivered</div></div></div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /content -->
+  </div><!-- /main -->
+</div><!-- /app -->
+
+<script>
+// ── Firebase config ──
+const FB_API_KEY = 'AIzaSyA2OZnzYY55QJCRdCiizG9P_9NJ-vOZiLE';
+const FB_PROJECT = 'zivo-4b032';
+const ADMIN_EMAIL = 'shubhamfxtrader@gmail.com';
+const WORKER = 'https://zivo-api.montybadhwar0720.workers.dev';
+
+let idToken = null;
+
+// ── Auth via Firebase REST ──
+async function doLogin() {
+  const pass  = document.getElementById('login-pass').value;
+  const btn   = document.getElementById('login-btn');
+  const err   = document.getElementById('login-err');
+  err.style.display = 'none';
+  // Simple PIN check — real security is on Worker/Firestore side
+  if (pass !== 'Zivo@2024') {
+    err.textContent = 'Wrong PIN';
+    err.style.display = 'block';
+    return;
+  }
+  idToken = 'admin-local';
+  sessionStorage.setItem('zivo_token', idToken);
+  showApp();
+}
+
+document.getElementById('login-pass')?.addEventListener('keydown', e => { if(e.key==='Enter') doLogin(); });
+
+function showApp() {
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('app-root').style.display = 'flex';
+  loadOverview();
+}
+
+// ── Firestore REST helper ──
+function fromV(v) {
+  if (!v) return null;
+  if ('integerValue' in v) return Number(v.integerValue);
+  if ('doubleValue'  in v) return v.doubleValue;
+  if ('stringValue'  in v) return v.stringValue;
+  if ('booleanValue' in v) return v.booleanValue;
+  if ('timestampValue' in v) return new Date(v.timestampValue);
+  if ('nullValue'    in v) return null;
+  if ('arrayValue'   in v) return (v.arrayValue.values||[]).map(fromV);
+  if ('mapValue'     in v) { const o={}; for(const k of Object.keys(v.mapValue.fields||{})) o[k]=fromV(v.mapValue.fields[k]); return o; }
+  return null;
+}
+function fromDoc(doc) { const o={}; for(const k of Object.keys(doc.fields||{})) o[k]=fromV(doc.fields[k]); return o; }
+
+async function fsQuery(collection, filters=[], lim=200) {
+  const where = filters.map(([f,op,val])=>({fieldFilter:{field:{fieldPath:f},op,value:toFV(val)}}));
+  const sq = { from:[{collectionId:collection}], limit:lim };
+  if(where.length===1) sq.where=where[0];
+  if(where.length>1)   sq.where={compositeFilter:{op:'AND',filters:where}};
+  const r = await fetch(`https://firestore.googleapis.com/v1/projects/${FB_PROJECT}/databases/(default)/documents:runQuery`,{
+    method:'POST',
+    headers:{ Authorization:`Bearer ${idToken}`, 'Content-Type':'application/json' },
+    body: JSON.stringify({structuredQuery:sq})
+  });
+  const j = await r.json();
+  return (j||[]).filter(x=>x.document).map(x=>({ id:x.document.name.split('/').pop(), data:fromDoc(x.document) }));
+}
+function toFV(v) {
+  if(typeof v==='boolean') return {booleanValue:v};
+  if(typeof v==='number')  return Number.isInteger(v)?{integerValue:String(v)}:{doubleValue:v};
+  if(v instanceof Date)    return {timestampValue:v.toISOString()};
+  return {stringValue:String(v)};
+}
+async function fsGet(path) {
+  const r = await fetch(`https://firestore.googleapis.com/v1/projects/${FB_PROJECT}/databases/(default)/documents/${path}`,{
+    headers:{ Authorization:`Bearer ${idToken}` }
+  });
+  if(r.status===404) return null;
+  const j = await r.json();
+  return j.fields ? fromDoc(j) : null;
+}
+
+// ── Load Overview panel ──
+async function loadOverview() {
+  try {
+    const [hosts, users, calls, txns] = await Promise.all([
+      fsQuery('hosts',[['accountStatus','EQUAL','active']],500),
+      fsQuery('users',[],500),
+      fsQuery('calls',[['status','EQUAL','connected']],100),
+      fsQuery('transactions',[],200)
+    ]);
+
+    // Stats
+    const totalRevenue = txns.reduce((s,t)=> t.data.type==='recharge'&&t.data.coins>0 ? s+t.data.coins : s, 0);
+    setText('stat-revenue', '₹'+totalRevenue.toLocaleString('en-IN'));
+    setText('stat-hosts', hosts.length);
+    setText('stat-callers', users.length);
+    setText('stat-calls', calls.length);
+
+    // Recent transactions table
+    const tbody = document.getElementById('txn-tbody');
+    if(tbody) {
+      const sorted = txns.sort((a,b)=>(b.data.createdAt||0)-(a.data.createdAt||0)).slice(0,8);
+      tbody.innerHTML = sorted.map(t=>{
+        const d=t.data;
+        const coins = d.coins>0 ? `<span style="color:var(--green)">+${d.coins}</span>` : `<span style="color:var(--red)">${d.coins}</span>`;
+        const status = `<span class="badge badge-green">Done</span>`;
+        const name = d.uid ? d.uid.slice(0,8)+'…' : '—';
+        const type = d.type ? d.type.replace(/_/g,' ') : '—';
+        return `<tr><td>${name}</td><td style="text-transform:capitalize">${type}</td><td>${coins}</td><td>${status}</td></tr>`;
+      }).join('');
+    }
+
+    // Live calls
+    const callsEl = document.getElementById('live-calls-list');
+    if(callsEl && calls.length) {
+      callsEl.innerHTML = calls.slice(0,5).map(c=>{
+        const d=c.data;
+        return `<div class="call-item"><div class="call-avatar">${(d.callerName||'?')[0].toUpperCase()}</div><div class="call-info"><div class="call-name">${d.callerName||'Caller'} ↔ ${d.hostName||'Host'}</div><div class="call-meta">${d.rateCoinsPerMinute||0} coins/min · ${d.type||'audio'}</div></div><div class="call-duration" style="color:var(--green)">Live</div></div>`;
+      }).join('');
+      document.getElementById('live-count-badge').textContent = calls.length + ' Active';
+    } else if(callsEl) {
+      callsEl.innerHTML = '<div style="padding:20px;text-align:center;color:var(--text-muted);font-size:13px">No active calls right now</div>';
+      document.getElementById('live-count-badge').textContent = '0 Active';
+    }
+
+    // Revenue split
+    const zivoAmt = Math.round(totalRevenue * 0.65);
+    const hostAmt = Math.round(totalRevenue * 0.35);
+    setText('rev-zivo', '₹'+zivoAmt.toLocaleString('en-IN'));
+    setText('rev-host', '₹'+hostAmt.toLocaleString('en-IN'));
+
+  } catch(e) { console.error('loadOverview', e); }
+}
+
+// ── Load Hosts panel ──
+async function loadAllHosts() {
+  try {
+    const hosts = await fsQuery('hosts',[],300);
+    const tbody = document.getElementById('hosts-tbody');
+    if(!tbody) return;
+    tbody.innerHTML = hosts.map(h=>{
+      const d=h.data;
+      const status = d.accountStatus==='active'
+        ? '<span class="badge badge-green">Active</span>'
+        : d.accountStatus==='pending'
+          ? '<span class="badge badge-amber">Pending</span>'
+          : '<span class="badge badge-red">Suspended</span>';
+      const online = d.available===true ? '<span class="badge badge-green">Online</span>' : '<span class="badge badge-muted">Offline</span>';
+      return `<tr>
+        <td><div class="host-name">${d.nickname||d.name||'Host'}</div><div class="host-id">${d.hostId||h.id}</div></td>
+        <td>${d.audioRate||375} / ${d.videoRate||500}</td>
+        <td>${online}</td>
+        <td>${status}</td>
+        <td><span class="badge badge-blue" style="cursor:pointer">View</span></td>
+      </tr>`;
+    }).join('');
+  } catch(e) { console.error('loadAllHosts',e); }
+}
+
+// ── Load Host Applications ──
+async function loadHostApplications() {
+  try {
+    const apps = await fsQuery('hosts',[['accountStatus','EQUAL','pending']],100);
+    const tbody = document.getElementById('host-apps-tbody');
+    if(!tbody) return;
+    if(!apps.length) { tbody.innerHTML='<tr><td colspan="5" style="text-align:center;color:var(--text-muted);padding:20px">No pending applications</td></tr>'; return; }
+    tbody.innerHTML = apps.map(h=>{
+      const d=h.data;
+      return `<tr>
+        <td><div class="host-name">${d.nickname||d.name||'—'}</div><div class="host-id">${h.id.slice(0,10)}…</div></td>
+        <td>${d.gender||'—'}</td>
+        <td>${d.languages||'—'}</td>
+        <td><span class="badge badge-amber">Pending</span></td>
+        <td>
+          <span class="badge badge-green" style="cursor:pointer;margin-right:6px" onclick="approveHost('${h.id}')">Approve</span>
+          <span class="badge badge-red" style="cursor:pointer" onclick="rejectHost('${h.id}')">Reject</span>
+        </td>
+      </tr>`;
+    }).join('');
+    // badge count
+    document.querySelectorAll('.nav-item').forEach(n=>{
+      if(n.textContent.includes('Host Applications')) {
+        const b = n.querySelector('.nav-badge'); if(b) b.textContent = apps.length;
+      }
+    });
+  } catch(e) { console.error('loadHostApplications',e); }
+}
+
+async function approveHost(uid) {
+  if(!confirm('Approve this host?')) return;
+  await fsWrite(`hosts/${uid}`, {accountStatus:'active'});
+  loadHostApplications();
+}
+async function rejectHost(uid) {
+  if(!confirm('Reject this host?')) return;
+  await fsWrite(`hosts/${uid}`, {accountStatus:'rejected'});
+  loadHostApplications();
+}
+
+async function fsWrite(path, fields) {
+  const f={};
+  for(const k of Object.keys(fields)) {
+    const v=fields[k];
+    f[k] = typeof v==='boolean' ? {booleanValue:v} : typeof v==='number' ? {integerValue:String(v)} : {stringValue:String(v)};
+  }
+  const mask = Object.keys(fields).map(k=>`updateMask.fieldPaths=${encodeURIComponent(k)}`).join('&');
+  await fetch(`https://firestore.googleapis.com/v1/projects/${FB_PROJECT}/databases/(default)/documents/${path}?${mask}`,{
+    method:'PATCH',
+    headers:{ Authorization:`Bearer ${idToken}`, 'Content-Type':'application/json' },
+    body: JSON.stringify({fields:f})
+  });
+}
+
+// ── Load Transactions ──
+async function loadTransactions() {
+  try {
+    const txns = await fsQuery('transactions',[],300);
+    const tbody = document.getElementById('txn-all-tbody');
+    if(!tbody) return;
+    const sorted = txns.sort((a,b)=>{
+      const ta = a.data.createdAt instanceof Date ? a.data.createdAt.getTime() : 0;
+      const tb = b.data.createdAt instanceof Date ? b.data.createdAt.getTime() : 0;
+      return tb-ta;
+    });
+    tbody.innerHTML = sorted.slice(0,100).map(t=>{
+      const d=t.data;
+      const coins = d.coins>0 ? `<span class="txn-credit">+${d.coins}</span>` : `<span class="txn-debit">${d.coins}</span>`;
+      const date = d.createdAt instanceof Date ? d.createdAt.toLocaleString('en-IN',{dateStyle:'short',timeStyle:'short'}) : '—';
+      return `<tr><td class="host-id">${d.uid?d.uid.slice(0,10)+'…':'—'}</td><td style="text-transform:capitalize">${(d.type||'').replace(/_/g,' ')}</td><td>${coins}</td><td>${date}</td><td><span class="badge badge-green">Done</span></td></tr>`;
+    }).join('');
+  } catch(e) { console.error('loadTransactions',e); }
+}
+
+// ── Load All Users ──
+async function loadAllUsers() {
+  try {
+    const users = await fsQuery('users',[],500);
+    const wallets = await fsQuery('wallets',[],500);
+    const walletMap = {};
+    wallets.forEach(w=>{ walletMap[w.id]=w.data; });
+    const tbody = document.getElementById('users-tbody');
+    if(!tbody) return;
+    tbody.innerHTML = users.map(u=>{
+      const d=u.data; const w=walletMap[u.id]||{};
+      const coins = w.coins||0;
+      const status = coins>0 ? '<span class="badge badge-green">Active</span>' : '<span class="badge badge-red">No Coins</span>';
+      return `<tr>
+        <td><div class="host-name">${d.name||d.displayName||d.nickname||'User'}</div><div class="host-id">${u.id.slice(0,10)}…</div></td>
+        <td>${d.createdAt instanceof Date ? d.createdAt.toLocaleDateString('en-IN') : '—'}</td>
+        <td>${coins}</td>
+        <td>—</td>
+        <td>${status}</td>
+      </tr>`;
+    }).join('');
+  } catch(e) { console.error('loadAllUsers',e); }
+}
+
+// ── helpers ──
+function setText(id, val) { const el=document.getElementById(id); if(el) el.textContent=val; }
+
+// ── Panel titles ──
+const titles = {
+  overview: 'Overview',
+  'host-applications': 'Host Applications',
+  'all-hosts': 'All Hosts',
+  'kyc-bank': 'KYC & Bank',
+  'all-users': 'All Users',
+  calls: 'Live Calls',
+  withdrawals: 'Withdrawals',
+  transactions: 'Transactions',
+  earnings: 'Earnings',
+  reports: 'Reports',
+  moderation: 'Moderation',
+  'live-rooms': 'Live Rooms',
+  'gifts-rates': 'Gifts & Rates',
+  support: 'Support Tickets',
+  notifications: 'Notifications',
+  settings: 'Settings'
+};
+
+function showPanel(name, navEl) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  const panel = document.getElementById('panel-' + name);
+  if (panel) panel.classList.add('active');
+  if (navEl) navEl.classList.add('active');
+  document.getElementById('page-title').textContent = titles[name] || name;
+  // Load real data per panel
+  if(name==='all-hosts') loadAllHosts();
+  if(name==='host-applications') loadHostApplications();
+  if(name==='transactions') loadTransactions();
+  if(name==='all-users') loadAllUsers();
+}
+
+// Filter button toggle
+document.querySelectorAll('.host-filters').forEach(group => {
+  group.querySelectorAll('.filter-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      group.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+    });
+  });
+});
+
+// Animate call durations
+const timers = [
+  { id: null, sec: 4*60+32 },
+  { id: null, sec: 2*60+18 },
+  { id: null, sec: 11*60+5 }
+];
+const durationEls = document.querySelectorAll('.call-duration');
+function fmt(s) {
+  const m = Math.floor(s/60).toString().padStart(2,'0');
+  const sec = (s%60).toString().padStart(2,'0');
+  return m+':'+sec;
+}
+timers.forEach((t, i) => {
+  if (durationEls[i]) durationEls[i].textContent = fmt(t.sec);
+  t.id = setInterval(() => {
+    t.sec++;
+    if (durationEls[i]) durationEls[i].textContent = fmt(t.sec);
+  }, 1000);
+});
+
+// ── Init ──
+(function init() {
+  const saved = sessionStorage.getItem('zivo_token');
+  if(saved) { idToken=saved; showApp(); }
+  else { document.getElementById('login-screen').style.display='flex'; }
+})();
+</script>
