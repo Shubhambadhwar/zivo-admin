@@ -1965,7 +1965,7 @@ function grRenderRates() {
     <td><b>Level ${r.level||i+1}</b></td>
     <td>${r.videoRate||500} coins/min</td>
     <td>${r.audioRate||375} coins/min</td>
-    <td>₹${Number(r.weeklyEarning||0).toLocaleString('en-IN')}/week</td>
+    <td>${Number(r.weeklyEarning||0).toLocaleString('en-IN')} coins/week</td>
     <td><button class="badge badge-blue" style="cursor:pointer;border:none" onclick="grEditRate(${i})">Edit</button></td>
   </tr>`).join('') || '<tr><td colspan="5" style="text-align:center;padding:20px;color:var(--text-muted)">No rate levels defined.</td></tr>';
 }
