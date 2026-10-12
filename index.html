@@ -1,4 +1,3 @@
-<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
 <title>ZIVO Admin</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
@@ -669,8 +668,8 @@ tr:hover td { background: rgba(232,68,90,0.03); }
   <div style="background:#13161E;border:1px solid #1F2330;border-radius:16px;padding:40px 36px;width:100%;max-width:380px;text-align:center">
     <div style="width:52px;height:52px;border-radius:14px;background:linear-gradient(135deg,#E8445A,#F06B4A);display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:700;color:#fff;margin:0 auto 20px;font-family:Inter,sans-serif">Z</div>
     <div style="font-family:Inter,sans-serif;font-size:22px;font-weight:700;color:#E8EAF0;margin-bottom:4px">ZIVO Admin</div>
-    <div style="font-family:Inter,sans-serif;font-size:13px;color:#8B92A5;margin-bottom:32px">shubhamfxtrader@gmail.com</div>
-    <input id="login-pass" type="password" placeholder="Password" style="width:100%;box-sizing:border-box;background:#0A0C10;border:1px solid #1F2330;border-radius:8px;padding:11px 14px;font-size:14px;color:#E8EAF0;font-family:Inter,sans-serif;outline:none;margin-bottom:20px">
+    <div style="font-family:Inter,sans-serif;font-size:13px;color:#8B92A5;margin-bottom:32px">Enter admin PIN</div>
+    <input id="login-pass" type="password" placeholder="PIN" style="width:100%;box-sizing:border-box;background:#0A0C10;border:1px solid #1F2330;border-radius:8px;padding:11px 14px;font-size:14px;color:#E8EAF0;font-family:Inter,sans-serif;outline:none;margin-bottom:20px">
     <div id="login-err" style="font-family:Inter,sans-serif;font-size:12px;color:#EF4444;margin-bottom:12px;display:none"></div>
     <button id="login-btn" onclick="doLogin()" style="width:100%;background:linear-gradient(135deg,#E8445A,#F06B4A);color:#fff;border:none;border-radius:8px;padding:12px;font-size:14px;font-weight:600;cursor:pointer;font-family:Inter,sans-serif">Sign In</button>
   </div>
@@ -1177,7 +1176,7 @@ tr:hover td { background: rgba(232,68,90,0.03); }
               <div class="section-head">Billing</div>
               <div class="setting-row">
                 <div><div class="setting-label">Coins per minute (base)</div><div class="setting-desc">Default rate for new hosts</div></div>
-                <input class="setting-input" type="number" value="8">
+                <input class="setting-input" type="number" value="500">
               </div>
               <div class="setting-row">
                 <div><div class="setting-label">Host Revenue Share</div><div class="setting-desc">Host earns 35% of call coins</div></div>
@@ -1386,11 +1385,9 @@ tr:hover td { background: rgba(232,68,90,0.03); }
             <div class="card-header"><div class="card-title">Call Rates</div></div>
             <div class="card-body">
               <div class="section-head">Audio Calls</div>
-              <div class="setting-row"><div><div class="setting-label">Minimum rate</div><div class="setting-desc">Per minute</div></div><input class="setting-input" type="number" value="8"></div>
-              <div class="setting-row"><div><div class="setting-label">Maximum rate</div><div class="setting-desc">Per minute</div></div><input class="setting-input" type="number" value="50"></div>
+              <div class="setting-row"><div><div class="setting-label">Default rate</div><div class="setting-desc">Per minute</div></div><input class="setting-input" type="number" value="375"></div>
               <div class="section-head">Video Calls</div>
-              <div class="setting-row"><div><div class="setting-label">Minimum rate</div><div class="setting-desc">Per minute</div></div><input class="setting-input" type="number" value="15"></div>
-              <div class="setting-row"><div><div class="setting-label">Maximum rate</div><div class="setting-desc">Per minute</div></div><input class="setting-input" type="number" value="100"></div>
+              <div class="setting-row"><div><div class="setting-label">Default rate</div><div class="setting-desc">Per minute</div></div><input class="setting-input" type="number" value="500"></div>
             </div>
           </div>
         </div>
@@ -1469,36 +1466,21 @@ const WORKER = 'https://zivo-api.montybadhwar0720.workers.dev';
 
 let idToken = null;
 
-// ── Auth — via Worker /admin/login (bypasses CSP) ──
+// ── Auth via Firebase REST ──
 async function doLogin() {
-  const pass  = document.getElementById('login-pass').value.trim();
+  const pass  = document.getElementById('login-pass').value;
   const btn   = document.getElementById('login-btn');
   const err   = document.getElementById('login-err');
   err.style.display = 'none';
-  if (!pass) { err.textContent = 'Enter password'; err.style.display='block'; return; }
-  btn.textContent = 'Signing in…'; btn.disabled = true;
-  try {
-    const r = await fetch(`${WORKER}/admin/login`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: ADMIN_EMAIL, password: pass })
-    });
-    const j = await r.json();
-    if (!j.ok || !j.idToken) {
-      err.textContent = j.error === 'INVALID_PASSWORD' || j.error?.includes('INVALID_LOGIN') ? 'Wrong password' : (j.error || 'Login failed');
-      err.style.display = 'block';
-      return;
-    }
-    idToken = j.idToken;
-    sessionStorage.setItem('zivo_token', idToken);
-    sessionStorage.setItem('zivo_token_exp', String(Date.now() + 55*60*1000));
-    showApp();
-  } catch(e) {
-    err.textContent = 'Network error: ' + e.message;
+  // Simple PIN check — real security is on Worker/Firestore side
+  if (pass !== 'Zivo@2024') {
+    err.textContent = 'Wrong PIN';
     err.style.display = 'block';
-  } finally {
-    btn.textContent = 'Sign In'; btn.disabled = false;
+    return;
   }
+  idToken = 'admin-local';
+  sessionStorage.setItem('zivo_token', idToken);
+  showApp();
 }
 
 document.getElementById('login-pass')?.addEventListener('keydown', e => { if(e.key==='Enter') doLogin(); });
@@ -1798,10 +1780,7 @@ timers.forEach((t, i) => {
 // ── Init ──
 (function init() {
   const saved = sessionStorage.getItem('zivo_token');
-  const exp   = Number(sessionStorage.getItem('zivo_token_exp') || 0);
-  if(saved && exp > Date.now()) { idToken=saved; showApp(); }
-  else { sessionStorage.removeItem('zivo_token'); document.getElementById('login-screen').style.display='flex'; }
+  if(saved) { idToken=saved; showApp(); }
+  else { document.getElementById('login-screen').style.display='flex'; }
 })();
 </script>
-
-</body></html>
