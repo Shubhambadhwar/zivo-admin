@@ -1870,7 +1870,32 @@ async function loadGiftsRates() {
 }
 
 function grDefaultRates() {
-  return Array.from({length:24},(_,i)=>({level:i+1, videoRate:500+i*125, audioRate:375+i*125, weeklyEarning:i===0?0:(i*50000)}));
+  return [
+    {level:1,  videoRate:500,  audioRate:375,  weeklyEarning:0},
+    {level:2,  videoRate:625,  audioRate:500,  weeklyEarning:50000},
+    {level:3,  videoRate:750,  audioRate:625,  weeklyEarning:100000},
+    {level:4,  videoRate:875,  audioRate:750,  weeklyEarning:200000},
+    {level:5,  videoRate:1000, audioRate:875,  weeklyEarning:350000},
+    {level:6,  videoRate:1125, audioRate:1000, weeklyEarning:500000},
+    {level:7,  videoRate:1250, audioRate:1125, weeklyEarning:700000},
+    {level:8,  videoRate:1375, audioRate:1250, weeklyEarning:1000000},
+    {level:9,  videoRate:1500, audioRate:1375, weeklyEarning:1300000},
+    {level:10, videoRate:1625, audioRate:1500, weeklyEarning:1600000},
+    {level:11, videoRate:1750, audioRate:1625, weeklyEarning:2000000},
+    {level:12, videoRate:1875, audioRate:1750, weeklyEarning:2500000},
+    {level:13, videoRate:2000, audioRate:1875, weeklyEarning:3000000},
+    {level:14, videoRate:2125, audioRate:2000, weeklyEarning:3500000},
+    {level:15, videoRate:2250, audioRate:2125, weeklyEarning:4000000},
+    {level:16, videoRate:2500, audioRate:2250, weeklyEarning:5000000},
+    {level:17, videoRate:3000, audioRate:2500, weeklyEarning:7000000},
+    {level:18, videoRate:3125, audioRate:3000, weeklyEarning:10000000},
+    {level:19, videoRate:3500, audioRate:3125, weeklyEarning:13000000},
+    {level:20, videoRate:3750, audioRate:3500, weeklyEarning:17000000},
+    {level:21, videoRate:4000, audioRate:3750, weeklyEarning:22000000},
+    {level:22, videoRate:4250, audioRate:4000, weeklyEarning:28000000},
+    {level:23, videoRate:4500, audioRate:4250, weeklyEarning:35000000},
+    {level:24, videoRate:4750, audioRate:4500, weeklyEarning:43000000},
+  ];
 }
 
 function grRenderKpis() {
