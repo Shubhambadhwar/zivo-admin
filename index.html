@@ -1003,14 +1003,14 @@ tr:hover td { background: rgba(232,68,90,0.03); }
       <!-- ===================== ALL HOSTS ===================== -->
       <div class="panel" id="panel-all-hosts">
         <div class="host-filters">
-          <button class="filter-btn active">All (48)</button>
-          <button class="filter-btn">Active (41)</button>
-          <button class="filter-btn">Pending (5)</button>
-          <button class="filter-btn">Suspended (2)</button>
+          <button class="filter-btn active" onclick="filterHosts('all',this)">All</button>
+          <button class="filter-btn" onclick="filterHosts('active',this)">Active</button>
+          <button class="filter-btn" onclick="filterHosts('pending',this)">Pending</button>
+          <button class="filter-btn" onclick="filterHosts('suspended',this)">Suspended</button>
         </div>
         <div class="search-bar">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-          <input type="text" placeholder="Search host name or ID…">
+          <input type="text" placeholder="Search host name or ID…" oninput="searchHosts(this.value)">
         </div>
         <div class="card">
           <div class="table-wrap">
@@ -1095,10 +1095,10 @@ tr:hover td { background: rgba(232,68,90,0.03); }
       <!-- ===================== TRANSACTIONS ===================== -->
       <div class="panel" id="panel-transactions">
         <div class="host-filters">
-          <button class="filter-btn active">All</button>
-          <button class="filter-btn">Recharges</button>
-          <button class="filter-btn">Call Deductions</button>
-          <button class="filter-btn">Host Payouts</button>
+          <button class="filter-btn active" onclick="filterTxns('all',this)">All</button>
+          <button class="filter-btn" onclick="filterTxns('recharge',this)">Recharges</button>
+          <button class="filter-btn" onclick="filterTxns('call',this)">Call Deductions</button>
+          <button class="filter-btn" onclick="filterTxns('payout',this)">Host Payouts</button>
         </div>
         <div class="card">
           <div class="table-wrap">
@@ -1582,28 +1582,60 @@ async function loadOverview() {
 }
 
 // ── Load Hosts panel ──
+let _allHostsData = [];
 async function loadAllHosts() {
   try {
     const hosts = await fsQuery('hosts',[],300);
-    const tbody = document.getElementById('hosts-tbody');
-    if(!tbody) return;
-    tbody.innerHTML = hosts.map(h=>{
-      const d=h.data;
-      const status = d.accountStatus==='active'
-        ? '<span class="badge badge-green">Active</span>'
-        : d.accountStatus==='pending'
-          ? '<span class="badge badge-amber">Pending</span>'
-          : '<span class="badge badge-red">Suspended</span>';
-      const online = d.available===true ? '<span class="badge badge-green">Online</span>' : '<span class="badge badge-muted">Offline</span>';
-      return `<tr>
-        <td><div class="host-name">${d.nickname||d.name||'Host'}</div><div class="host-id">${d.hostId||h.id}</div></td>
-        <td>${d.audioRate||375} / ${d.videoRate||500}</td>
-        <td>${online}</td>
-        <td>${status}</td>
-        <td><span class="badge badge-blue" style="cursor:pointer" onclick="editHostRate('${h.id}','${d.nickname||d.name||'Host'}',${d.audioRate||375},${d.videoRate||500})">Edit Rate</span></td>
-      </tr>`;
-    }).join('');
+    _allHostsData = hosts;
+    renderHostsTable(hosts);
+    // update filter counts
+    const active = hosts.filter(h=>h.data.accountStatus==='active').length;
+    const pending = hosts.filter(h=>h.data.accountStatus==='pending').length;
+    const suspended = hosts.filter(h=>h.data.accountStatus==='suspended'||h.data.accountStatus==='banned').length;
+    const btns = document.querySelectorAll('#panel-all-hosts .filter-btn');
+    if(btns[0]) btns[0].textContent=`All (${hosts.length})`;
+    if(btns[1]) btns[1].textContent=`Active (${active})`;
+    if(btns[2]) btns[2].textContent=`Pending (${pending})`;
+    if(btns[3]) btns[3].textContent=`Suspended (${suspended})`;
   } catch(e) { console.error('loadAllHosts',e); }
+}
+function renderHostsTable(hosts) {
+  const tbody = document.getElementById('hosts-tbody');
+  if(!tbody) return;
+  if(!hosts.length){tbody.innerHTML='<tr><td colspan="5" style="text-align:center;padding:20px;color:var(--text-muted)">No data</td></tr>';return;}
+  tbody.innerHTML = hosts.map(h=>{
+    const d=h.data;
+    const status = d.accountStatus==='active'
+      ? '<span class="badge badge-green">Active</span>'
+      : d.accountStatus==='pending'
+        ? '<span class="badge badge-amber">Pending</span>'
+        : '<span class="badge badge-red">Suspended</span>';
+    const online = d.available===true ? '<span class="badge badge-green">Online</span>' : '<span class="badge badge-muted">Offline</span>';
+    return `<tr>
+      <td><div class="host-name">${d.nickname||d.name||'Host'}</div><div class="host-id">${d.hostId||h.id}</div></td>
+      <td>${d.audioRate||375} / ${d.videoRate||500}</td>
+      <td>${online}</td>
+      <td>${status}</td>
+      <td><span class="badge badge-blue" style="cursor:pointer" onclick="editHostRate('${h.id}','${d.nickname||d.name||'Host'}',${d.audioRate||375},${d.videoRate||500})">Edit Rate</span></td>
+    </tr>`;
+  }).join('');
+}
+function filterHosts(type, btn) {
+  document.querySelectorAll('#panel-all-hosts .filter-btn').forEach(b=>b.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+  let filtered = _allHostsData;
+  if(type==='active') filtered = _allHostsData.filter(h=>h.data.accountStatus==='active');
+  else if(type==='pending') filtered = _allHostsData.filter(h=>h.data.accountStatus==='pending');
+  else if(type==='suspended') filtered = _allHostsData.filter(h=>h.data.accountStatus==='suspended'||h.data.accountStatus==='banned');
+  renderHostsTable(filtered);
+}
+function searchHosts(q) {
+  const lq = q.toLowerCase();
+  const filtered = _allHostsData.filter(h=>{
+    const d=h.data;
+    return (d.nickname||'').toLowerCase().includes(lq)||(d.name||'').toLowerCase().includes(lq)||(d.hostId||h.id||'').toLowerCase().includes(lq);
+  });
+  renderHostsTable(filtered);
 }
 
 // ── Load Host Applications ──
@@ -1661,23 +1693,37 @@ async function fsWrite(path, fields) {
 }
 
 // ── Load Transactions ──
+let _allTxnsData = [];
 async function loadTransactions() {
   try {
     const txns = await fsQuery('transactions',[],300);
-    const tbody = document.getElementById('txn-all-tbody');
-    if(!tbody) return;
-    const sorted = txns.sort((a,b)=>{
+    _allTxnsData = txns.sort((a,b)=>{
       const ta = a.data.createdAt instanceof Date ? a.data.createdAt.getTime() : 0;
       const tb = b.data.createdAt instanceof Date ? b.data.createdAt.getTime() : 0;
       return tb-ta;
     });
-    tbody.innerHTML = sorted.slice(0,100).map(t=>{
-      const d=t.data;
-      const coins = d.coins>0 ? `<span class="txn-credit">+${d.coins}</span>` : `<span class="txn-debit">${d.coins}</span>`;
-      const date = d.createdAt instanceof Date ? d.createdAt.toLocaleString('en-IN',{dateStyle:'short',timeStyle:'short'}) : '—';
-      return `<tr><td class="host-id">${d.uid?d.uid.slice(0,10)+'…':'—'}</td><td style="text-transform:capitalize">${(d.type||'').replace(/_/g,' ')}</td><td>${coins}</td><td>${date}</td><td><span class="badge badge-green">Done</span></td></tr>`;
-    }).join('');
+    renderTxnsTable(_allTxnsData);
   } catch(e) { console.error('loadTransactions',e); }
+}
+function renderTxnsTable(txns) {
+  const tbody = document.getElementById('txn-all-tbody');
+  if(!tbody) return;
+  if(!txns.length){tbody.innerHTML='<tr><td colspan="5" style="text-align:center;padding:20px;color:var(--text-muted)">No data</td></tr>';return;}
+  tbody.innerHTML = txns.slice(0,100).map(t=>{
+    const d=t.data;
+    const coins = d.coins>0 ? `<span class="txn-credit">+${d.coins}</span>` : `<span class="txn-debit">${d.coins}</span>`;
+    const date = d.createdAt instanceof Date ? d.createdAt.toLocaleString('en-IN',{dateStyle:'short',timeStyle:'short'}) : '—';
+    return `<tr><td class="host-id">${d.uid?d.uid.slice(0,10)+'…':'—'}</td><td style="text-transform:capitalize">${(d.type||'').replace(/_/g,' ')}</td><td>${coins}</td><td>${date}</td><td><span class="badge badge-green">Done</span></td></tr>`;
+  }).join('');
+}
+function filterTxns(type, btn) {
+  document.querySelectorAll('#panel-transactions .filter-btn').forEach(b=>b.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+  let filtered = _allTxnsData;
+  if(type==='recharge') filtered = _allTxnsData.filter(t=>(t.data.type||'').includes('recharge'));
+  else if(type==='call') filtered = _allTxnsData.filter(t=>(t.data.type||'').includes('call')||(t.data.type||'').includes('deduct'));
+  else if(type==='payout') filtered = _allTxnsData.filter(t=>(t.data.type||'').includes('payout')||(t.data.type||'').includes('withdraw'));
+  renderTxnsTable(filtered);
 }
 
 // ── Load All Users ──
