@@ -679,8 +679,9 @@ tr:hover td { background: rgba(232,68,90,0.03); }
   <div style="background:#13161E;border:1px solid #1F2330;border-radius:16px;padding:40px 36px;width:100%;max-width:380px;text-align:center">
     <div style="width:52px;height:52px;border-radius:14px;background:linear-gradient(135deg,#E8445A,#F06B4A);display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:700;color:#fff;margin:0 auto 20px;font-family:Inter,sans-serif">Z</div>
     <div style="font-family:Inter,sans-serif;font-size:22px;font-weight:700;color:#E8EAF0;margin-bottom:4px">ZIVO Admin</div>
-    <div style="font-family:Inter,sans-serif;font-size:13px;color:#8B92A5;margin-bottom:32px">Enter admin PIN</div>
-    <input id="login-pass" type="password" placeholder="PIN" style="width:100%;box-sizing:border-box;background:#0A0C10;border:1px solid #1F2330;border-radius:8px;padding:11px 14px;font-size:14px;color:#E8EAF0;font-family:Inter,sans-serif;outline:none;margin-bottom:20px">
+    <div style="font-family:Inter,sans-serif;font-size:13px;color:#8B92A5;margin-bottom:32px">Admin Login</div>
+    <input id="login-email" type="email" placeholder="Email" style="width:100%;box-sizing:border-box;background:#0A0C10;border:1px solid #1F2330;border-radius:8px;padding:11px 14px;font-size:14px;color:#E8EAF0;font-family:Inter,sans-serif;outline:none;margin-bottom:12px">
+    <input id="login-pass" type="password" placeholder="Password" style="width:100%;box-sizing:border-box;background:#0A0C10;border:1px solid #1F2330;border-radius:8px;padding:11px 14px;font-size:14px;color:#E8EAF0;font-family:Inter,sans-serif;outline:none;margin-bottom:20px">
     <div id="login-err" style="font-family:Inter,sans-serif;font-size:12px;color:#EF4444;margin-bottom:12px;display:none"></div>
     <button id="login-btn" onclick="doLogin()" style="width:100%;background:linear-gradient(135deg,#E8445A,#F06B4A);color:#fff;border:none;border-radius:8px;padding:12px;font-size:14px;font-weight:600;cursor:pointer;font-family:Inter,sans-serif">Sign In</button>
   </div>
@@ -1509,19 +1510,24 @@ let idToken = null;
 
 // ── Auth via Firebase REST ──
 async function doLogin() {
+  const email = (document.getElementById('login-email').value||'').trim();
   const pass  = document.getElementById('login-pass').value;
   const btn   = document.getElementById('login-btn');
   const err   = document.getElementById('login-err');
   err.style.display = 'none';
-  // Simple PIN check — real security is on Worker/Firestore side
-  if (pass !== 'Zivo@2024') {
-    err.textContent = 'Wrong PIN';
-    err.style.display = 'block';
-    return;
-  }
-  idToken = 'admin-local';
-  sessionStorage.setItem('zivo_token', idToken);
-  showApp();
+  if(!email||!pass){err.textContent='Email aur password dono bharo';err.style.display='block';return;}
+  btn.textContent='Signing in...';btn.disabled=true;
+  try {
+    const r = await fetch(`https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=${FB_API_KEY}`,{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({email,password:pass,returnSecureToken:true})
+    });
+    const j = await r.json();
+    if(j.error){err.textContent=j.error.message==='INVALID_LOGIN_CREDENTIALS'?'Wrong email or password':j.error.message;err.style.display='block';btn.textContent='Sign In';btn.disabled=false;return;}
+    idToken = j.idToken;
+    sessionStorage.setItem('zivo_token', idToken);
+    showApp();
+  } catch(e){err.textContent='Network error';err.style.display='block';btn.textContent='Sign In';btn.disabled=false;}
 }
 
 document.getElementById('login-pass')?.addEventListener('keydown', e => { if(e.key==='Enter') doLogin(); });
@@ -1554,7 +1560,7 @@ async function fsQuery(collection, filters=[], lim=200) {
   if(where.length>1)   sq.where={compositeFilter:{op:'AND',filters:where}};
   const r = await fetch(`https://firestore.googleapis.com/v1/projects/${FB_PROJECT}/databases/(default)/documents:runQuery?key=${FB_API_KEY}`,{
     method:'POST',
-    headers:{ 'Content-Type':'application/json' },
+    headers:{ 'Content-Type':'application/json', Authorization:`Bearer ${idToken}` },
     body: JSON.stringify({structuredQuery:sq})
   });
   const j = await r.json();
@@ -1567,7 +1573,7 @@ function toFV(v) {
   return {stringValue:String(v)};
 }
 async function fsGet(path) {
-  const r = await fetch(`https://firestore.googleapis.com/v1/projects/${FB_PROJECT}/databases/(default)/documents/${path}?key=${FB_API_KEY}`);
+  const r = await fetch(`https://firestore.googleapis.com/v1/projects/${FB_PROJECT}/databases/(default)/documents/${path}?key=${FB_API_KEY}`,{headers:{Authorization:`Bearer ${idToken}`}});
   if(r.status===404) return null;
   const j = await r.json();
   return j.fields ? fromDoc(j) : null;
@@ -1700,7 +1706,7 @@ async function fsWrite(path, fields) {
   const mask = Object.keys(fields).map(k=>`updateMask.fieldPaths=${encodeURIComponent(k)}`).join('&');
   await fetch(`https://firestore.googleapis.com/v1/projects/${FB_PROJECT}/databases/(default)/documents/${path}?${mask}&key=${FB_API_KEY}`,{
     method:'PATCH',
-    headers:{ 'Content-Type':'application/json' },
+    headers:{ 'Content-Type':'application/json', Authorization:`Bearer ${idToken}` },
     body: JSON.stringify({fields:f})
   });
 }
@@ -2029,7 +2035,8 @@ function wireGiftsRates() {
 // ── Init ──
 (function init() {
   const saved = sessionStorage.getItem('zivo_token');
-  if(saved) { idToken=saved; showApp(); }
-  else { document.getElementById('login-screen').style.display='flex'; }
+  // Reject old PIN-based fake token
+  if(saved && saved !== 'admin-local') { idToken=saved; showApp(); }
+  else { sessionStorage.removeItem('zivo_token'); document.getElementById('login-screen').style.display='flex'; }
 })();
 </script>
