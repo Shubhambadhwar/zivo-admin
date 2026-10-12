@@ -798,8 +798,8 @@ tr:hover td { background: rgba(232,68,90,0.03); }
           <div class="admin-name">Shubham</div>
           <div class="admin-role">Super Admin</div>
         </div>
-        <button onclick="fbAuth.signOut()" title="Logout" style="background:none;border:none;cursor:pointer;color:#EF4444;font-size:18px;padding:4px 6px;margin-left:auto">⏻</button>
       </div>
+      <button onclick="sessionStorage.removeItem('zivo_token');location.reload()" style="width:100%;margin-top:8px;padding:8px;background:#2a1a1a;border:1px solid #EF4444;border-radius:8px;color:#EF4444;cursor:pointer;font-size:13px;font-weight:600">⏻ Logout</button>
     </div>
   </aside>
 
@@ -1552,9 +1552,9 @@ async function fsQuery(collection, filters=[], lim=200) {
   const sq = { from:[{collectionId:collection}], limit:lim };
   if(where.length===1) sq.where=where[0];
   if(where.length>1)   sq.where={compositeFilter:{op:'AND',filters:where}};
-  const r = await fetch(`https://firestore.googleapis.com/v1/projects/${FB_PROJECT}/databases/(default)/documents:runQuery`,{
+  const r = await fetch(`https://firestore.googleapis.com/v1/projects/${FB_PROJECT}/databases/(default)/documents:runQuery?key=${FB_API_KEY}`,{
     method:'POST',
-    headers:{ Authorization:`Bearer ${idToken}`, 'Content-Type':'application/json' },
+    headers:{ 'Content-Type':'application/json' },
     body: JSON.stringify({structuredQuery:sq})
   });
   const j = await r.json();
@@ -1567,9 +1567,7 @@ function toFV(v) {
   return {stringValue:String(v)};
 }
 async function fsGet(path) {
-  const r = await fetch(`https://firestore.googleapis.com/v1/projects/${FB_PROJECT}/databases/(default)/documents/${path}`,{
-    headers:{ Authorization:`Bearer ${idToken}` }
-  });
+  const r = await fetch(`https://firestore.googleapis.com/v1/projects/${FB_PROJECT}/databases/(default)/documents/${path}?key=${FB_API_KEY}`);
   if(r.status===404) return null;
   const j = await r.json();
   return j.fields ? fromDoc(j) : null;
@@ -1700,9 +1698,9 @@ async function fsWrite(path, fields) {
     f[k] = typeof v==='boolean' ? {booleanValue:v} : typeof v==='number' ? {integerValue:String(v)} : {stringValue:String(v)};
   }
   const mask = Object.keys(fields).map(k=>`updateMask.fieldPaths=${encodeURIComponent(k)}`).join('&');
-  await fetch(`https://firestore.googleapis.com/v1/projects/${FB_PROJECT}/databases/(default)/documents/${path}?${mask}`,{
+  await fetch(`https://firestore.googleapis.com/v1/projects/${FB_PROJECT}/databases/(default)/documents/${path}?${mask}&key=${FB_API_KEY}`,{
     method:'PATCH',
-    headers:{ Authorization:`Bearer ${idToken}`, 'Content-Type':'application/json' },
+    headers:{ 'Content-Type':'application/json' },
     body: JSON.stringify({fields:f})
   });
 }
