@@ -792,16 +792,21 @@ tr:hover td { background: rgba(232,68,90,0.03); }
       </div>
     </div>
 
-    <div class="sidebar-footer">
-      <div class="admin-pill">
+    <div class="sidebar-footer" style="position:relative">
+      <div class="admin-pill" onclick="document.getElementById('profile-menu').classList.toggle('open')" style="cursor:pointer">
         <div class="admin-avatar">S</div>
         <div class="admin-info">
           <div class="admin-name">Shubham</div>
           <div class="admin-role">Super Admin</div>
         </div>
+        <span style="color:var(--sidebar-muted);margin-left:auto;font-size:12px">⌃</span>
       </div>
-      <button onclick="sessionStorage.removeItem('zivo_token');location.reload()" style="width:100%;margin-top:8px;padding:8px;background:#2a1a1a;border:1px solid #EF4444;border-radius:8px;color:#EF4444;cursor:pointer;font-size:13px;font-weight:600">⏻ Logout</button>
+      <div id="profile-menu" style="display:none;position:absolute;bottom:70px;left:10px;right:10px;background:#1A1D27;border:1px solid #2a2d3a;border-radius:10px;padding:6px;z-index:100">
+        <div style="padding:8px 10px;font-size:12px;color:var(--sidebar-muted);border-bottom:1px solid #2a2d3a;margin-bottom:4px">shubhamfxtrader@gmail.com</div>
+        <div onclick="sessionStorage.removeItem('zivo_token');location.reload()" style="padding:9px 10px;color:#EF4444;font-size:13px;font-weight:600;cursor:pointer;border-radius:7px;display:flex;align-items:center;gap:8px" onmouseover="this.style.background='#2a1a1a'" onmouseout="this.style.background='transparent'">⏻ Logout</div>
+      </div>
     </div>
+    <style>#profile-menu.open{display:block!important}</style>
   </aside>
 
   <!-- MAIN CONTENT -->
