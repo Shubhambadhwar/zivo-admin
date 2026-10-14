@@ -1771,7 +1771,7 @@ async function loadWithdrawals() {
       const date = d.createdAt instanceof Date?d.createdAt.toLocaleDateString('en-IN'):'—';
       const actions = d.status==='pending'?`<span class="badge badge-green" style="cursor:pointer;margin-right:4px" onclick="payWithdrawal('${w.id}')">Pay</span><span class="badge badge-red" style="cursor:pointer" onclick="rejectWithdrawal('${w.id}')">Reject</span>`:'—';
       const rupees=Math.floor((d.amount||0)/100*0.99);
-      return `<tr><td class="host-id">${d.hostId?d.hostId.slice(0,10)+'…':'—'}</td><td>₹${rupees.toLocaleString('en-IN')}<br><small style='color:gray'>${(d.amount||0).toLocaleString('en-IN')} coins</small></td>
+            return `<tr><td class="host-id">${d.hostId?d.hostId.slice(0,10)+'…':'—'}</td><td>₹${rupees.toLocaleString('en-IN')}<br><small style='color:gray'>${(d.amount||0).toLocaleString('en-IN')} coins</small></td><td>${d.upiId||d.bankName||'—'}</td><td>${date}</td><td>${status}</td><td>${actions}</td></tr>`;
     }).join('');
   } catch(e){console.error('loadWithdrawals',e);}
 }
