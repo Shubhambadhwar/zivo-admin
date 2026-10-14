@@ -1757,7 +1757,7 @@ async function loadWithdrawals() {
     const tbody = document.getElementById('withdrawals-tbody');
     if(!tbody) return;
     const pending = list.filter(w=>w.data.status==='pending');
-    const pendingTotal = pending.reduce((s,w)=>s+(w.data.amount||0),0);
+    const pendingTotal = pending.reduce((s,w)=>s+Math.floor((w.data.amount||0)/100*0.99),0);
     setText('wd-pending-count', pending.length);
     setText('wd-pending-total', '₹'+pendingTotal.toLocaleString('en-IN'));
     if(!list.length){tbody.innerHTML='<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--text-muted)">No withdrawal requests</td></tr>';return;}
@@ -1770,7 +1770,8 @@ async function loadWithdrawals() {
       const status = d.status==='paid'?'<span class="badge badge-green">Paid</span>':d.status==='rejected'?'<span class="badge badge-red">Rejected</span>':'<span class="badge badge-amber">Pending</span>';
       const date = d.createdAt instanceof Date?d.createdAt.toLocaleDateString('en-IN'):'—';
       const actions = d.status==='pending'?`<span class="badge badge-green" style="cursor:pointer;margin-right:4px" onclick="payWithdrawal('${w.id}')">Pay</span><span class="badge badge-red" style="cursor:pointer" onclick="rejectWithdrawal('${w.id}')">Reject</span>`:'—';
-      return `<tr><td class="host-id">${d.hostId?d.hostId.slice(0,10)+'…':'—'}</td><td>₹${(d.amount||0).toLocaleString('en-IN')}</td><td>${d.upiId||d.bankName||'—'}</td><td>${date}</td><td>${status}</td><td>${actions}</td></tr>`;
+      const rupees=Math.floor((d.amount||0)/100*0.99);
+      return `<tr><td class="host-id">${d.hostId?d.hostId.slice(0,10)+'…':'—'}</td><td>₹${rupees.toLocaleString('en-IN')}<br><small style='color:gray'>${(d.amount||0).toLocaleString('en-IN')} coins</small></td>
     }).join('');
   } catch(e){console.error('loadWithdrawals',e);}
 }
