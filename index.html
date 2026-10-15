@@ -1707,6 +1707,22 @@ async function rejectHost(uid) {
   loadHostApplications();
 }
 
+async function fsIncrementAdminCount(ticketId) {
+  try {
+    await fetch(`https://firestore.googleapis.com/v1/projects/${FB_PROJECT}/databases/(default)/documents/support/${ticketId}?key=${FB_API_KEY}`,{
+      method:'PATCH',
+      headers:{'Content-Type':'application/json',Authorization:`Bearer ${idToken}`},
+      body:JSON.stringify({fields:{adminMsgCount:{integerValue:String(Date.now())}}})
+    });
+    // Use Firestore transform for atomic increment
+    await fetch(`https://firestore.googleapis.com/v1/projects/${FB_PROJECT}/databases/(default)/documents:commit?key=${FB_API_KEY}`,{
+      method:'POST',
+      headers:{'Content-Type':'application/json',Authorization:`Bearer ${idToken}`},
+      body:JSON.stringify({writes:[{transform:{document:`projects/${FB_PROJECT}/databases/(default)/documents/support/${ticketId}`,fieldTransforms:[{fieldPath:'adminMsgCount',increment:{integerValue:'1'}}]}}]})
+    });
+  } catch(e){}
+}
+
 async function fsWrite(path, fields) {
   const f={};
   for(const k of Object.keys(fields)) {
@@ -2005,7 +2021,7 @@ async function openTicket(ticketId, hostName) {
   modal.addEventListener('click', e=>{ if(e.target===modal) closeTicketModal(); });
   // Auto-refresh every 5s while modal is open
   if(window._ticketRefreshInterval) clearInterval(window._ticketRefreshInterval);
-  window._ticketRefreshInterval = setInterval(()=>{ if(document.getElementById('ticket-modal')) refreshTicketMsgs(ticketId); else clearInterval(window._ticketRefreshInterval); }, 2000);
+  window._ticketRefreshInterval = setInterval(()=>{ if(document.getElementById('ticket-modal')) refreshTicketMsgs(ticketId); else clearInterval(window._ticketRefreshInterval); }, 10000);
   // Load messages subcollection
   try {
     const msgs = await fsListMessages(ticketId);
@@ -2055,6 +2071,7 @@ async function sendTicketReply(ticketId) {
     });
     // Update parent ticket lastReply
     await fsWrite(`support/${ticketId}`,{lastReply:text,status:'in_progress'});
+    fsIncrementAdminCount(ticketId);
     // Reload messages
     openTicket(ticketId,'');
     loadSupport();
@@ -2064,7 +2081,7 @@ async function sendTicketReply(ticketId) {
 function renderTicketMsg(d){
   const t=d.type||'text';
   if(t==='image'&&d.data) return `<img src="data:${d.mime||'image/jpeg'};base64,${d.data}" style="max-width:220px;border-radius:8px;display:block">`;
-  if(t==='voice'&&d.data){ const src=`data:${d.mime||'audio/webm'};base64,${d.data}`; return `<audio controls src="${src}" style="max-width:200px;height:32px"></audio>`; }
+  if(t==='voice'&&d.data){ const mime=d.mime||'audio/mp4'; const src=`data:${mime};base64,${d.data}`; return `<audio controls src="${src}" style="max-width:220px;height:36px"></audio>`; }
   if(t==='file'&&d.data) return `📄 ${d.name||'File'}`;
   return d.text||d.message||d.content||'';
 }
@@ -2097,6 +2114,7 @@ async function toggleTicketMic(ticketId){
               body:JSON.stringify({fields:{type:{stringValue:'voice'},mime:{stringValue:'audio/webm'},data:{stringValue:b64},from:{stringValue:'admin'},senderType:{stringValue:'admin'},isAdmin:{booleanValue:true},createdAt:{timestampValue:now}}})
             });
             await fsWrite(`support/${ticketId}`,{lastReply:'🎤 Voice note',status:'in_progress'});
+            fsIncrementAdminCount(ticketId);
             refreshTicketMsgs(ticketId);
           }catch(err){alert('Voice send failed: '+err.message);}
         };
@@ -2121,6 +2139,7 @@ async function sendTicketImage(ticketId, input){
         body:JSON.stringify({fields:{type:{stringValue:'image'},mime:{stringValue:file.type||'image/jpeg'},data:{stringValue:b64},from:{stringValue:'admin'},senderType:{stringValue:'admin'},isAdmin:{booleanValue:true},createdAt:{timestampValue:now}}})
       });
       await fsWrite(`support/${ticketId}`,{lastReply:'📷 Image',status:'in_progress'});
+      fsIncrementAdminCount(ticketId);
       refreshTicketMsgs(ticketId);
     }catch(err){alert('Image send failed: '+err.message);}
   };
