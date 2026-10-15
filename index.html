@@ -1776,7 +1776,34 @@ async function loadWithdrawals() {
   } catch(e){console.error('loadWithdrawals',e);}
 }
 async function payWithdrawal(id){if(!confirm('Mark as paid?'))return;await fsWrite(`withdrawals/${id}`,{status:'paid'});loadWithdrawals();}
-async function rejectWithdrawal(id){if(!confirm('Reject?'))return;await fsWrite(`withdrawals/${id}`,{status:'rejected'});loadWithdrawals();}
+async function rejectWithdrawal(id){
+  if(!confirm('Reject?'))return;
+  try{
+    const wSnap=await db.collection('withdrawals').doc(id).get();
+    const wData=wSnap.data()||{};
+    const prevStatus=wData.status||'';
+    if(prevStatus==='pending'||prevStatus==='approved'){
+      const hostId=wData.hostId||wData.uid||'';
+      const amount=Number(wData.amount||0);
+      if(hostId&&amount>0){
+        await db.runTransaction(async tx=>{
+          const walRef=db.collection('wallets').doc(hostId);
+          const walSnap=await tx.get(walRef);
+          if(walSnap.exists){
+            const cur=Number((walSnap.data()||{}).availableCoins||0);
+            tx.update(walRef,{availableCoins:cur+amount,updatedAt:firebase.firestore.FieldValue.serverTimestamp()});
+          }
+          tx.update(db.collection('withdrawals').doc(id),{status:'rejected',processedAt:firebase.firestore.FieldValue.serverTimestamp()});
+        });
+      }else{
+        await fsWrite(`withdrawals/${id}`,{status:'rejected'});
+      }
+    }else{
+      await fsWrite(`withdrawals/${id}`,{status:'rejected'});
+    }
+    loadWithdrawals();
+  }catch(e){alert('Reject failed: '+(e.message||e));}
+}
 
 // ── Load Calls ──
 async function loadCalls() {
