@@ -1994,7 +1994,9 @@ async function openTicket(ticketId, hostName) {
     <div id="ticket-msgs" style="flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:10px">
       <div style="text-align:center;color:var(--text-muted);font-size:13px">Loading messages…</div>
     </div>
-    <div style="padding:12px 16px;border-top:1px solid var(--border);display:flex;gap:8px">
+    <div style="padding:12px 16px;border-top:1px solid var(--border);display:flex;gap:8px;align-items:center">
+      <label title="Send image" style="cursor:pointer;font-size:20px;color:var(--text-muted)">🖼<input type="file" accept="image/*" style="display:none" onchange="sendTicketImage('${ticketId}',this)"></label>
+      <button id="ticket-mic-btn" onclick="toggleTicketMic('${ticketId}')" title="Voice note" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--text-muted);padding:0">🎤</button>
       <input id="ticket-reply-input" placeholder="Type reply…" style="flex:1;padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-size:14px;background:var(--bg);color:var(--text)" onkeydown="if(event.key==='Enter')sendTicketReply('${ticketId}')">
       <button onclick="sendTicketReply('${ticketId}')" style="padding:8px 16px;background:var(--rose);color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:14px">Send</button>
     </div>
@@ -2023,7 +2025,7 @@ async function openTicket(ticketId, hostName) {
       const time = d.createdAt instanceof Date?d.createdAt.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'}):'';
       return `<div style="display:flex;flex-direction:column;align-items:${align};gap:2px">
         <div style="font-size:11px;color:var(--text-muted)">${name} ${time}</div>
-        <div style="max-width:80%;padding:8px 12px;border-radius:10px;background:${bg};font-size:14px;word-break:break-word">${d.text||d.message||d.content||'—'}</div>
+        <div style="max-width:80%;padding:8px 12px;border-radius:10px;background:${bg};font-size:14px;word-break:break-word">${renderTicketMsg(d)}</div>
       </div>`;
     }).join('');
     container.scrollTop = container.scrollHeight;
@@ -2059,6 +2061,72 @@ async function sendTicketReply(ticketId) {
   } catch(e){ alert('Send failed: '+(e.message||e)); }
 }
 
+function renderTicketMsg(d){
+  const t=d.type||'text';
+  if(t==='image'&&d.data) return `<img src="data:${d.mime||'image/jpeg'};base64,${d.data}" style="max-width:220px;border-radius:8px;display:block">`;
+  if(t==='voice'&&d.data){ const src=`data:${d.mime||'audio/webm'};base64,${d.data}`; return `<audio controls src="${src}" style="max-width:200px;height:32px"></audio>`; }
+  if(t==='file'&&d.data) return `📄 ${d.name||'File'}`;
+  return d.text||d.message||d.content||'';
+}
+let _ticketMicRec=null, _ticketMicChunks=[], _ticketMicActive=false;
+async function toggleTicketMic(ticketId){
+  const btn=document.getElementById('ticket-mic-btn');
+  if(_ticketMicActive){
+    // Stop and send
+    _ticketMicRec.stop();
+  } else {
+    // Start recording
+    try{
+      const stream = await navigator.mediaDevices.getUserMedia({audio:true});
+      _ticketMicChunks=[];
+      _ticketMicRec = new MediaRecorder(stream);
+      _ticketMicRec.ondataavailable = e=>{ if(e.data.size>0) _ticketMicChunks.push(e.data); };
+      _ticketMicRec.onstop = async ()=>{
+        stream.getTracks().forEach(t=>t.stop());
+        _ticketMicActive=false;
+        if(btn){btn.textContent='🎤';btn.style.color='var(--text-muted)';}
+        const blob = new Blob(_ticketMicChunks, {type:'audio/webm'});
+        const reader = new FileReader();
+        reader.onload = async function(e){
+          const b64=e.target.result.split(',')[1];
+          const now=new Date().toISOString();
+          try{
+            await fetch(`https://firestore.googleapis.com/v1/projects/${FB_PROJECT}/databases/(default)/documents/support/${ticketId}/messages?key=${FB_API_KEY}`,{
+              method:'POST',
+              headers:{'Content-Type':'application/json',Authorization:`Bearer ${idToken}`},
+              body:JSON.stringify({fields:{type:{stringValue:'voice'},mime:{stringValue:'audio/webm'},data:{stringValue:b64},from:{stringValue:'admin'},senderType:{stringValue:'admin'},isAdmin:{booleanValue:true},createdAt:{timestampValue:now}}})
+            });
+            await fsWrite(`support/${ticketId}`,{lastReply:'🎤 Voice note',status:'in_progress'});
+            refreshTicketMsgs(ticketId);
+          }catch(err){alert('Voice send failed: '+err.message);}
+        };
+        reader.readAsDataURL(blob);
+      };
+      _ticketMicRec.start();
+      _ticketMicActive=true;
+      if(btn){btn.textContent='⏹';btn.style.color='var(--rose)';}
+    }catch(err){alert('Mic access denied: '+err.message);}
+  }
+}
+async function sendTicketImage(ticketId, input){
+  const file = input.files[0]; if(!file) return;
+  const reader = new FileReader();
+  reader.onload = async function(e){
+    const b64 = e.target.result.split(',')[1];
+    const now = new Date().toISOString();
+    try{
+      await fetch(`https://firestore.googleapis.com/v1/projects/${FB_PROJECT}/databases/(default)/documents/support/${ticketId}/messages?key=${FB_API_KEY}`,{
+        method:'POST',
+        headers:{'Content-Type':'application/json',Authorization:`Bearer ${idToken}`},
+        body:JSON.stringify({fields:{type:{stringValue:'image'},mime:{stringValue:file.type||'image/jpeg'},data:{stringValue:b64},from:{stringValue:'admin'},senderType:{stringValue:'admin'},isAdmin:{booleanValue:true},createdAt:{timestampValue:now}}})
+      });
+      await fsWrite(`support/${ticketId}`,{lastReply:'📷 Image',status:'in_progress'});
+      refreshTicketMsgs(ticketId);
+    }catch(err){alert('Image send failed: '+err.message);}
+  };
+  reader.readAsDataURL(file);
+  input.value='';
+}
 function closeTicketModal(){ if(window._ticketRefreshInterval){clearInterval(window._ticketRefreshInterval);window._ticketRefreshInterval=null;} const m=document.getElementById('ticket-modal');if(m)m.remove(); }
 async function refreshTicketMsgs(ticketId){
   try{
@@ -2074,7 +2142,7 @@ async function refreshTicketMsgs(ticketId){
       const align=isAdmin?'flex-end':'flex-start';
       const name=isAdmin?'Admin':(d.senderName||d.hostName||'Host');
       const time=d.createdAt instanceof Date?d.createdAt.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'}):'';
-      return `<div style="display:flex;flex-direction:column;align-items:${align};gap:2px"><div style="font-size:11px;color:var(--text-muted)">${name} ${time}</div><div style="max-width:80%;padding:8px 12px;border-radius:10px;background:${bg};font-size:14px;word-break:break-word">${d.text||d.message||d.content||'—'}</div></div>`;
+      return `<div style="display:flex;flex-direction:column;align-items:${align};gap:2px"><div style="font-size:11px;color:var(--text-muted)">${name} ${time}</div><div style="max-width:80%;padding:8px 12px;border-radius:10px;background:${bg};font-size:14px;word-break:break-word">${renderTicketMsg(d)}</div></div>`;
     }).join('');
     if(atBottom) container.scrollTop = container.scrollHeight;
   }catch(e){}
